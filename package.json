@@ -1,0 +1,23 @@
+{
+  "name": "lovo-cierre-nocturno-pwa",
+  "version": "1.0.0",
+  "description": "PWA interactiva en tiempo real para el cierre de turno nocturno de la coctelería LoVo con Supabase y Render",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "lovo",
+    "cocteleria",
+    "cierre",
+    "pwa",
+    "supabase",
+    "realtime",
+    "render"
+  ],
+  "license": "MIT"
+}

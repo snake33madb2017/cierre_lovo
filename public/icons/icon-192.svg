@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#92400E" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="#09090B" />
+  <rect x="8" y="8" width="176" height="176" rx="36" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.6" />
+  <!-- Copa de cóctel minimalista dorada -->
+  <path d="M56 52 H136 L96 102 Z" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linejoin="round" />
+  <line x1="96" y1="102" x2="96" y2="142" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round" />
+  <line x1="72" y1="142" x2="120" y2="142" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round" />
+  <circle cx="110" cy="68" r="6" fill="#F59E0B" />
+  <text x="96" y="170" text-anchor="middle" fill="#FDE68A" font-family="Georgia, serif" font-weight="bold" font-size="22" letter-spacing="4">LoVo</text>
+</svg>

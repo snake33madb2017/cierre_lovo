@@ -1,0 +1,163 @@
+/* ==========================================================================
+   LoVo Cocktail Club — Estética Nocturna de Alta Coctelería (Mobile-First)
+   ========================================================================== */
+
+:root {
+  --bg-obsidian: #070709;
+  --bg-surface: #111116;
+  --bg-card: rgba(22, 22, 29, 0.85);
+  --bg-card-hover: rgba(30, 30, 40, 0.95);
+  --gold-light: #fde68a;
+  --gold-primary: #d4af37;
+  --gold-amber: #f59e0b;
+  --gold-dark: #92400e;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-subtle: rgba(212, 175, 55, 0.16);
+  --border-gold: rgba(212, 175, 55, 0.45);
+  --emerald-ok: #10b981;
+  --danger-red: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-obsidian);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(212, 175, 55, 0.14), transparent 55%),
+    radial-gradient(circle at 90% 90%, rgba(245, 158, 11, 0.06), transparent 45%);
+  background-attachment: fixed;
+}
+
+.font-serif-lovo {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Scrollbar elegante */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 9999px;
+}
+
+/* Tarjetas Glassmorphism con borde dorado sutil */
+.lovo-glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+}
+
+.lovo-glass-gold {
+  background: linear-gradient(145deg, rgba(28, 25, 18, 0.92), rgba(15, 15, 20, 0.95));
+  border: 1px solid var(--border-gold);
+  box-shadow: 0 12px 32px -8px rgba(212, 175, 55, 0.14);
+}
+
+/* Botón Dorado Principal */
+.btn-gold {
+  background: linear-gradient(135deg, #f59e0b 0%, #d4af37 55%, #b45309 100%);
+  color: #09090b;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.28);
+}
+
+.btn-gold:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(212, 175, 55, 0.4);
+}
+
+.btn-gold:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Animación de sincronización en tiempo real cuando otro empleado actualiza una tarea */
+@keyframes realtimeFlash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    border-color: rgba(245, 158, 11, 0.9);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+    border-color: rgba(212, 175, 55, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+.task-realtime-pulse {
+  animation: realtimeFlash 1.2s ease-out;
+}
+
+/* Estado de tarea completada */
+.task-card-completed {
+  background: linear-gradient(135deg, rgba(6, 46, 34, 0.38), rgba(16, 20, 24, 0.85)) !important;
+  border-color: rgba(16, 185, 129, 0.38) !important;
+}
+
+/* Checkbox personalizado táctil para móvil */
+.lovo-checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  border: 2px solid rgba(212, 175, 55, 0.55);
+  background: rgba(10, 10, 14, 0.8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.lovo-checkbox.checked {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: #34d399;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+}
+
+/* Indicador de punto en vivo */
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.25);
+  }
+}
+
+.live-dot {
+  animation: livePulse 2s infinite ease-in-out;
+}
+
+/* Ocultar barra de scroll horizontal en chips de categorías */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
