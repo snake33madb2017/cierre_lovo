@@ -1,11 +1,6 @@
 /**
- * Lógica Principal de la PWA "LoVo" — Cierre de Turno Nocturno (v6)
- * Incluye:
- *  - Punto 1: PIN de seguridad para el Rol Encargado
- *  - Punto 3: Fotos de verificación desde cámara comprimidas en tiempo real
- *  - Punto 5: Selector rápido de empleados en 1 toque + Gestión de plantilla
- *  - Punto 6: Animación "CHEERS!" (Login y 100% completado) + Historial de cierres
- *  - Permisos: Solo el Encargado puede agregar o quitar tareas de la lista
+ * Lógica Principal de la PWA "LoVo" — Cierre de Turno Nocturno (v7)
+ * Iconografía corporativa sutil en siluetas SVG monocromáticas (#d3a548 / currentColor)
  */
 (function () {
   const state = {
@@ -57,7 +52,7 @@
     dom.roleSelectButtons = document.querySelectorAll('[data-select-role]');
     dom.roleErrorMsg = document.getElementById('role-error-msg');
 
-    // Cámara oculta y Modal de Foto (Punto 3)
+    // Cámara oculta y Modal de Foto
     dom.hiddenCameraInput = document.getElementById('hidden-camera-input');
     dom.photoModal = document.getElementById('photo-modal');
     dom.photoModalTitle = document.getElementById('photo-modal-title');
@@ -66,7 +61,7 @@
     dom.btnClosePhotoModalBottom = document.getElementById('btn-close-photo-modal-bottom');
     dom.btnDeletePhoto = document.getElementById('btn-delete-photo');
 
-    // Modal Celebración 100% (Punto 6)
+    // Modal Celebración 100%
     dom.cheers100Modal = document.getElementById('cheers-100-modal');
     dom.btnCloseCheers100 = document.getElementById('btn-close-cheers-100');
 
@@ -174,7 +169,7 @@
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/sw.js?v=6')
+        .register('/sw.js?v=7')
         .then((reg) => reg.update())
         .catch((err) => console.warn('Service Worker opcional no registrado:', err));
     }
@@ -235,7 +230,6 @@
         window.lovoRealtime.fetchShiftHistory()
       ]);
 
-      // Recuperar fotos de respaldo local si alguna se guardó antes de migrar SQL
       const enrichedTasks = (tasks || []).map((t) => {
         const fallbackPhoto = localStorage.getItem(`lovo_photo_${t.id}`) || '';
         return {
@@ -272,7 +266,7 @@
   }
 
   // =========================================================================
-  // PUNTO 5: SELECTOR RÁPIDO DE EMPLEADOS HABITUALES
+  // SELECTOR RÁPIDO DE EMPLEADOS HABITUALES
   // =========================================================================
   function renderQuickEmployeeSelectors() {
     const members = getTeamMembers();
@@ -413,9 +407,9 @@
                 ? 'bg-[#d3a548]/20 text-[#d3a548] border border-[#d3a548]/50'
                 : 'bg-black/30 text-white/90 border border-white/15'
             }">
-              <span class="w-2 h-2 rounded-full ${isBoss ? 'bg-[#d3a548]' : 'bg-[#10b981]'}"></span>
+              <span class="w-1.5 h-1.5 rounded-full ${isBoss ? 'bg-[#d3a548]' : 'bg-[#10b981]'}"></span>
               ${escapeHtml(u.name || 'Compañero')}
-              ${isBoss ? '<span class="text-[10px] uppercase tracking-wider text-[#d3a548] font-extrabold">(Encargado)</span>' : ''}
+              ${isBoss ? '<span class="text-[10px] uppercase tracking-wider text-[#d3a548] font-extrabold">• Encargado</span>' : ''}
             </span>
           `;
         })
@@ -440,7 +434,7 @@
   }
 
   // =========================================================================
-  // PANTALLA DE SELECCIÓN DE ROL + ANIMACIÓN "CHEERS!" (PUNTO 1 y PUNTO 6)
+  // PANTALLA DE SELECCIÓN DE ROL + ANIMACIÓN "CHEERS!"
   // =========================================================================
   function enterMainApp(withCheersAnimation = true) {
     const isEncargado = state.user.role === 'encargado';
@@ -457,7 +451,6 @@
         ? 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#d3a548] text-[#081933]'
         : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/35 text-[#d3a548] border border-[#d3a548]/40';
 
-      // EXCLUSIVO ENCARGADO: Botón Agregar Tarea y Panel de Supervisión
       if (isEncargado) {
         dom.supervisorSection.classList.remove('hidden');
         dom.btnToggleAddTask.classList.remove('hidden');
@@ -475,12 +468,12 @@
     if (withCheersAnimation && dom.loginCheersBox && dom.loginFormWrapper) {
       dom.cheersUserName.textContent = state.user.name;
       dom.cheersUserRole.textContent = isEncargado
-        ? 'Acceso Verificado como Encargado 🛡️'
-        : 'Acceso de Equipo activado en tiempo real';
+        ? 'Acceso Verificado como Encargado'
+        : 'Sincronización de Equipo Activa';
       dom.loginFormWrapper.classList.add('hidden');
       dom.loginCheersBox.classList.remove('hidden');
       if (navigator.vibrate) navigator.vibrate(40);
-      setTimeout(finalizeEnter, 950);
+      setTimeout(finalizeEnter, 900);
     } else {
       finalizeEnter();
     }
@@ -497,7 +490,7 @@
   }
 
   // =========================================================================
-  // RENDERIZADO PRINCIPAL
+  // RENDERIZADO PRINCIPAL (SILUETAS CORPORATIVAS SVG)
   // =========================================================================
   function renderAll() {
     updateProgressAndStats();
@@ -523,7 +516,6 @@
     if (dom.statUnassigned) dom.statUnassigned.textContent = unassigned;
     if (dom.statPhotos) dom.statPhotos.textContent = photosCount;
 
-    // Punto 6: Si se alcanza el 100% de tareas completadas, lanzar "¡CHEERS!"
     if (total > 0 && completed === total && !state.celebrated100) {
       state.celebrated100 = true;
       if (dom.cheers100Modal) {
@@ -652,7 +644,7 @@
                       : 'bg-black/30 text-[#d3a548] border border-[#d3a548]/30'
                   }">
                     ${escapeHtml(task.category || 'Operativa')}
-                    ${task.is_custom ? ' • Añadida' : ''}
+                    ${task.is_custom ? ' • Adicional' : ''}
                   </span>
 
                   <div class="flex items-center gap-1.5">
@@ -668,14 +660,13 @@
                     }
 
                     ${
-                      /* EXCLUSIVO ENCARGADO: Quitar cualquier tarea */
                       isEncargado
                         ? `<button
                              type="button"
                              data-action="delete-task"
                              data-task-id="${task.id}"
                              title="Quitar tarea de la lista (Exclusivo Encargado)"
-                             class="text-white/55 hover:text-[#ef4444] px-1.5 py-0.5 rounded-lg border border-transparent hover:border-[#ef4444]/40 text-[11px] font-semibold transition flex items-center gap-0.5"
+                             class="text-white/55 hover:text-[#ef4444] px-1.5 py-0.5 rounded-lg border border-transparent hover:border-[#ef4444]/40 text-[11px] font-semibold transition flex items-center gap-1"
                            >
                              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -699,9 +690,9 @@
               </div>
             </div>
 
-            <!-- Fila Intermedia: Asignación de Responsable + Foto Cámara + Nota -->
+            <!-- Fila Intermedia: Responsable + Botones con Siluetas Corporativas -->
             <div class="mt-3.5 pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
-              <div class="relative flex-1 min-w-[155px]">
+              <div class="relative flex-1 min-w-[150px]">
                 <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-[#d3a548]">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -721,51 +712,61 @@
                 />
               </div>
 
-              <!-- Botón rápido "Yo me encargo" -->
+              <!-- Botón Asignar a mí (Silueta Usuario Check) -->
               <button
                 type="button"
                 data-action="claim-task"
                 data-task-id="${task.id}"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 ${
                   isAssignedToMe
                     ? 'bg-[#d3a548] text-[#081933] shadow'
                     : 'bg-black/30 hover:bg-black/50 text-[#d3a548] border border-[#d3a548]/50'
                 }"
               >
-                ${isAssignedToMe ? '✓ Mía' : '🤚 Yo'}
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>${isAssignedToMe ? 'Mía' : 'Asignarme'}</span>
               </button>
 
-              <!-- Punto 3: Botón de Cámara para subir Foto de Verificación -->
+              <!-- Botón de Cámara (Silueta Cámara Minimalista) -->
               <button
                 type="button"
                 data-action="capture-photo"
                 data-task-id="${task.id}"
-                title="Tomar foto de verificación con la cámara"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 ${
+                title="Tomar foto de verificación"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition inline-flex items-center gap-1.5 ${
                   hasPhoto
                     ? 'bg-[#10b981]/20 text-[#10b981] border-[#10b981]/50'
                     : 'bg-black/25 text-white/75 border-white/15 hover:text-[#d3a548] hover:border-[#d3a548]/40'
                 }"
               >
-                📷 ${hasPhoto ? 'Cambiar' : 'Foto'}
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>${hasPhoto ? 'Foto ✓' : 'Foto'}</span>
               </button>
 
-              <!-- Botón para desplegar/ocultar nota -->
+              <!-- Botón Nota (Silueta Documento/Edición) -->
               <button
                 type="button"
                 data-action="toggle-note"
                 data-task-id="${task.id}"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 ${
+                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition inline-flex items-center gap-1.5 ${
                   task.notes && task.notes.trim()
                     ? 'bg-[#d3a548]/20 text-[#d3a548] border-[#d3a548]/50'
                     : 'bg-black/25 text-white/70 border-white/15 hover:text-white'
                 }"
               >
-                📝 Nota
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                <span>Nota</span>
               </button>
             </div>
 
-            <!-- Punto 3: Miniatura de la Foto de Verificación si existe -->
+            <!-- Miniatura de la Foto de Verificación -->
             ${
               hasPhoto
                 ? `<div class="mt-2.5 flex items-center justify-between p-2 rounded-xl bg-black/35 border border-[#d3a548]/35">
@@ -778,14 +779,19 @@
                          class="w-11 h-11 rounded-lg object-cover border border-[#d3a548] cursor-pointer"
                        />
                        <div>
-                         <p class="text-xs font-bold text-[#f0ca75]">📷 Evidencia fotográfica adjunta</p>
+                         <p class="text-xs font-bold text-[#f0ca75] flex items-center gap-1.5">
+                           <svg class="w-3.5 h-3.5 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                           </svg>
+                           <span>Evidencia fotográfica adjunta</span>
+                         </p>
                          <button
                            type="button"
                            data-action="view-photo"
                            data-task-id="${task.id}"
                            class="text-[11px] text-[#d3a548] underline font-semibold"
                          >
-                           Ampliar foto de verificación
+                           Ampliar imagen
                          </button>
                        </div>
                      </div>
@@ -822,7 +828,6 @@
   function renderSupervisorDashboard() {
     if (state.user.role !== 'encargado') return;
 
-    // 1. Rendimiento por Empleado
     const mapByEmployee = {};
     state.tasks.forEach((t) => {
       const person = (t.assigned_to || '').trim();
@@ -860,7 +865,6 @@
       }
     }
 
-    // 2. Plantilla de Empleados Habituales (Punto 5)
     if (dom.supervisorTeamChips) {
       const members = getTeamMembers();
       dom.supervisorTeamChips.innerHTML = members
@@ -874,7 +878,7 @@
               class="text-white/60 hover:text-[#ef4444] font-bold"
               title="Quitar de la lista rápida"
             >
-              ✕
+              ×
             </button>
           </span>
         `
@@ -889,7 +893,6 @@
       dom.changeSupervisorPinInput.value = getActiveSupervisorPin();
     }
 
-    // 3. Fecha y Hora de Cierre
     if (dom.closingTimestampDisplay) {
       if (state.shiftState.closed_at) {
         const dt = new Date(state.shiftState.closed_at);
@@ -912,7 +915,6 @@
       );
     }
 
-    // 4. Punto 6: Historial de Cierres Anteriores
     renderShiftHistoryList();
   }
 
@@ -931,17 +933,17 @@
         return `
           <div class="p-3 rounded-xl bg-black/30 border border-[#d3a548]/25 flex flex-col gap-1">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-[#d3a548]">📅 ${escapeHtml(dtStr)}</span>
+              <span class="text-xs font-bold text-[#d3a548]">◆ ${escapeHtml(dtStr)}</span>
               <span class="text-xs font-mono font-bold text-[#10b981]">
                 ${item.completed_tasks || 0}/${item.total_tasks || 0} hechas
               </span>
             </div>
             <p class="text-[11px] text-white/80">
-              👤 Verificado por: <strong>${escapeHtml(item.closed_by || 'Encargado')}</strong>
+              Verificado por: <strong>${escapeHtml(item.closed_by || 'Encargado')}</strong>
             </p>
             ${
               item.general_notes
-                ? `<p class="text-[11px] text-white/65 italic mt-0.5">🗒️ "${escapeHtml(item.general_notes)}"</p>`
+                ? `<p class="text-[11px] text-white/65 italic mt-0.5">— "${escapeHtml(item.general_notes)}"</p>`
                 : ''
             }
           </div>
@@ -962,6 +964,9 @@
     });
   }
 
+  /**
+   * Reporte corporativo limpio con símbolos geométricos sutiles
+   */
   function buildWhatsAppReportText(closingDate) {
     const dtStr = formatDateTimeEs(closingDate || new Date());
     const completed = state.tasks.filter((t) => t.is_completed).length;
@@ -975,36 +980,36 @@
     ).trim();
 
     const lines = [];
-    lines.push(`🍸 *REPORTE OFICIAL DE CIERRE — LoVo* 🍸`);
-    lines.push(`📅 *Fecha y Hora:* ${dtStr}`);
-    lines.push(`👤 *Verificador / Encargado:* ${supervisorName}`);
-    lines.push(`📊 *Estado General:* ${completed}/${total} tareas completadas (${photosCount} con foto 📷)`);
-    lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`📋 *DETALLE DE TAREAS Y RESPONSABLES:*`);
+    lines.push(`◆ *REPORTE OFICIAL DE CIERRE — COCTELERÍA LOVO* ◆`);
+    lines.push(`▪ *Fecha y Hora:* ${dtStr}`);
+    lines.push(`▪ *Verificador / Encargado:* ${supervisorName}`);
+    lines.push(`▪ *Estado General:* ${completed}/${total} tareas completadas (${photosCount} con evidencia fotográfica)`);
+    lines.push(`────────────────────`);
+    lines.push(`*DETALLE DE TAREAS Y RESPONSABLES:*`);
 
     state.tasks.forEach((t, idx) => {
-      const icon = t.is_completed ? '✅' : '❌';
+      const mark = t.is_completed ? '[✓]' : '[Pendiente]';
       const who = (t.assigned_to || '').trim() || 'Sin asignar';
       const note = (t.notes || '').trim();
-      const photoTag = t.photo_url && t.photo_url.trim() ? ' 📷' : '';
-      let line = `${idx + 1}. ${icon} *${t.title}*${photoTag} — 👤 _${who}_`;
+      const photoTag = t.photo_url && t.photo_url.trim() ? ' [Foto ✓]' : '';
+      let line = `${idx + 1}. ${mark} *${t.title}*${photoTag} — _${who}_`;
       if (note) {
-        line += `\n   📝 Nota: ${note}`;
+        line += `\n   • Nota: ${note}`;
       }
       lines.push(line);
     });
 
-    lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`🗒️ *OBSERVACIONES DEL ENCARGADO (Cajas / Incidencias):*`);
+    lines.push(`────────────────────`);
+    lines.push(`*OBSERVACIONES DEL ENCARGADO (Cajas / Incidencias):*`);
     lines.push(generalNotes ? generalNotes : 'Sin incidencias adicionales registradas.');
-    lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`🔒 *Cierre verificado en tiempo real — Coctelería LoVo*`);
+    lines.push(`────────────────────`);
+    lines.push(`*Cierre verificado en tiempo real — Coctelería LoVo*`);
 
     return lines.join('\n');
   }
 
   // =========================================================================
-  // PUNTO 3: COMPRESIÓN DE FOTO EN CANVAS PARA TIEMPO REAL
+  // COMPRESIÓN DE FOTO EN CANVAS PARA TIEMPO REAL
   // =========================================================================
   function compressImageFile(file, maxWidth = 720, quality = 0.65) {
     return new Promise((resolve, reject) => {
@@ -1053,7 +1058,6 @@
   }
 
   function bindGlobalEvents() {
-    // Punto 5: Clic en un chip de empleado rápido en la pantalla de Login
     if (dom.quickEmployeeChips) {
       dom.quickEmployeeChips.addEventListener('click', (e) => {
         const chip = e.target.closest('[data-quick-name]');
@@ -1065,25 +1069,23 @@
       });
     }
 
-    // Selección de Rol + Validación de PIN de Encargado (Punto 1)
     dom.roleSelectButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const role = btn.getAttribute('data-select-role');
         const name = (dom.userNameInput.value || '').trim();
 
         if (!name) {
-          dom.roleErrorMsg.textContent = '⚠️ Selecciona o escribe tu nombre antes de entrar';
+          dom.roleErrorMsg.textContent = 'Selecciona o escribe tu nombre antes de entrar';
           dom.roleErrorMsg.classList.remove('hidden');
           dom.userNameInput.focus();
           return;
         }
 
-        // Si elige Encargado, verificar el PIN de seguridad
         if (role === 'encargado') {
           if (dom.supervisorPinGroup.classList.contains('hidden')) {
             dom.supervisorPinGroup.classList.remove('hidden');
             dom.roleErrorMsg.textContent =
-              '🔐 Introduce el PIN de Encargado y vuelve a pulsar "ENTRAR COMO ENCARGADO"';
+              'Introduce el PIN de Encargado y vuelve a pulsar "ENTRAR COMO ENCARGADO"';
             dom.roleErrorMsg.classList.remove('hidden');
             dom.supervisorPinInput.focus();
             return;
@@ -1092,7 +1094,7 @@
           const enteredPin = (dom.supervisorPinInput.value || '').trim();
           const validPin = getActiveSupervisorPin();
           if (enteredPin !== validPin) {
-            dom.roleErrorMsg.textContent = '❌ PIN de Encargado incorrecto';
+            dom.roleErrorMsg.textContent = 'PIN de Encargado incorrecto';
             dom.roleErrorMsg.classList.remove('hidden');
             dom.supervisorPinInput.focus();
             return;
@@ -1109,7 +1111,6 @@
       dom.btnSwitchRole.addEventListener('click', showRoleSelectionScreen);
     }
 
-    // Filtros por Estado
     dom.filterStatusBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         state.filterStatus = btn.getAttribute('data-filter-status');
@@ -1140,7 +1141,6 @@
       });
     }
 
-    // Acciones en la lista de tareas
     if (dom.tasksContainer) {
       dom.tasksContainer.addEventListener('click', async (e) => {
         const actionEl = e.target.closest('[data-action]');
@@ -1190,12 +1190,10 @@
             showToast('Error al reclamar la tarea', 'error');
           }
         } else if (action === 'capture-photo') {
-          // Punto 3: Abrir cámara del móvil para esta tarea
           state.activeCameraTaskId = taskId;
           dom.hiddenCameraInput.value = '';
           dom.hiddenCameraInput.click();
         } else if (action === 'view-photo') {
-          // Punto 3: Ver foto de verificación en grande
           if (!task.photo_url) return;
           state.activePhotoModalTaskId = taskId;
           dom.photoModalTitle.textContent = task.title;
@@ -1216,7 +1214,6 @@
             }
           }
         } else if (action === 'delete-task') {
-          // EXCLUSIVO ENCARGADO: Quitar tarea
           if (state.user.role !== 'encargado') {
             showToast('Solo el Encargado puede quitar tareas', 'error');
             return;
@@ -1245,20 +1242,18 @@
       });
     }
 
-    // Punto 3: Procesar foto tomada desde la cámara del móvil
     if (dom.hiddenCameraInput) {
       dom.hiddenCameraInput.addEventListener('change', async (e) => {
         const file = e.target.files && e.target.files[0];
         const taskId = state.activeCameraTaskId;
         if (!file || !taskId) return;
 
-        showToast('Procesando y sincronizando foto 📷...');
+        showToast('Procesando y sincronizando imagen...');
         try {
           const compressedDataUrl = await compressImageFile(file, 720, 0.65);
           const task = state.tasks.find((t) => t.id === taskId);
           if (task) {
             task.photo_url = compressedDataUrl;
-            // Si aún no estaba marcada como hecha, marcarla y asignar al usuario actual
             if (!task.is_completed) {
               task.is_completed = true;
               task.completed_at = new Date().toISOString();
@@ -1273,16 +1268,15 @@
               completed_at: task.completed_at,
               assigned_to: task.assigned_to
             });
-            showToast('Foto de verificación subida en tiempo real ✓');
+            showToast('Evidencia fotográfica sincronizada ✓');
           }
         } catch (err) {
           console.error('Error al comprimir foto:', err);
-          showToast('Error al procesar la foto', 'error');
+          showToast('Error al procesar la imagen', 'error');
         }
       });
     }
 
-    // Modal Visor de Foto
     const closePhotoModal = () => {
       dom.photoModal.classList.add('hidden');
       state.activePhotoModalTaskId = null;
@@ -1297,24 +1291,22 @@
         if (!taskId) return;
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task) return;
-        if (!confirm('¿Borrar la foto de verificación de esta tarea?')) return;
+        if (!confirm('¿Eliminar la evidencia fotográfica de esta tarea?')) return;
         task.photo_url = '';
         localStorage.removeItem(`lovo_photo_${taskId}`);
         closePhotoModal();
         renderAll();
         await window.lovoRealtime.updateTaskFields(taskId, { photo_url: '' });
-        showToast('Foto eliminada');
+        showToast('Imagen eliminada');
       });
     }
 
-    // Modal Celebración 100% (Punto 6)
     if (dom.btnCloseCheers100) {
       dom.btnCloseCheers100.addEventListener('click', () => {
         dom.cheers100Modal.classList.add('hidden');
       });
     }
 
-    // EXCLUSIVO ENCARGADO: Agregar tarea
     if (dom.btnToggleAddTask && dom.addTaskDrawer) {
       dom.btnToggleAddTask.addEventListener('click', () => {
         if (state.user.role !== 'encargado') {
@@ -1365,7 +1357,6 @@
       });
     }
 
-    // Punto 5: Gestión de Plantilla de Empleados por el Encargado
     if (dom.addTeamMemberForm) {
       dom.addTeamMemberForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1400,7 +1391,6 @@
       });
     }
 
-    // Punto 1: Cambiar PIN de Encargado
     if (dom.btnSaveSupervisorPin) {
       dom.btnSaveSupervisorPin.addEventListener('click', async () => {
         const newPin = (dom.changeSupervisorPinInput.value || '').trim();
@@ -1415,7 +1405,6 @@
       });
     }
 
-    // Notas Generales del Encargado
     if (dom.generalNotesInput) {
       let shiftNotesTimer = null;
       dom.generalNotesInput.addEventListener('input', (e) => {

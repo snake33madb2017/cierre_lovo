@@ -26,8 +26,8 @@
   <!-- Cliente Oficial de Supabase (Realtime + Postgres Changes + Presence) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché v6) -->
-  <link rel="stylesheet" href="/css/styles.css?v=6" />
+  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché v7) -->
+  <link rel="stylesheet" href="/css/styles.css?v=7" />
 </head>
 <body style="background-color: #081933; color: #ffffff;">
 
@@ -41,7 +41,7 @@
   <!-- Datalist global de empleados para autocompletado rápido -->
   <datalist id="team-members-datalist"></datalist>
 
-  <!-- Input oculto para Cámara / Foto de Verificación (Punto 3) -->
+  <!-- Input oculto para Cámara / Foto de Verificación -->
   <input
     id="hidden-camera-input"
     type="file"
@@ -54,7 +54,7 @@
   <div id="toast-container" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-80 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- ========================================================================
-       PANTALLA 1: LOGIN / SELECCIÓN DE ROL (100% IDÉNTICA A INVENTARIO LOVO)
+       PANTALLA 1: LOGIN / SELECCIÓN DE ROL (ESTÉTICA CORPORATIVA SUTIL)
        ======================================================================== -->
   <main id="role-screen" class="min-h-dvh flex flex-col justify-center items-center px-4 py-10 relative z-10">
     <div class="glass-login-container" style="width: 355px; max-width: 94vw;">
@@ -72,10 +72,13 @@
 
       <!-- Contenido del formulario de acceso -->
       <div id="login-form-wrapper" style="transition: opacity 0.4s ease;">
-        <!-- Punto 5: Selección Rápida de Empleado en 1 Toque -->
+        <!-- Selección Rápida de Empleado en 1 Toque -->
         <div class="text-left mb-3">
-          <p class="text-[11px] uppercase tracking-wider text-[#d3a548] font-bold mb-1.5">
-            ⚡ Toca tu nombre o escríbelo abajo:
+          <p class="text-[11px] uppercase tracking-wider text-[#d3a548] font-bold mb-1.5 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span>Selecciona tu perfil o escríbelo:</span>
           </p>
           <div id="quick-employee-chips" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto py-0.5"></div>
         </div>
@@ -92,7 +95,7 @@
           <label for="user-name-input">Nombre / ID Empleado</label>
         </div>
 
-        <!-- Punto 1: Campo de PIN de Seguridad para Encargado (se despliega al pulsar Encargado) -->
+        <!-- Campo de PIN de Seguridad para Encargado -->
         <div id="supervisor-pin-group" class="input-group hidden" style="margin-top: 12px;">
           <input
             type="password"
@@ -101,69 +104,89 @@
             placeholder=" "
             autocomplete="off"
           />
-          <label for="supervisor-pin-input">🔐 PIN de Encargado (Por defecto: 1234)</label>
+          <label for="supervisor-pin-input">PIN de Encargado (Por defecto: 1234)</label>
         </div>
 
         <p
           id="role-error-msg"
           class="hidden"
-          style="color: #ef4444; font-size: 0.85rem; margin-top: -8px; margin-bottom: 12px; font-weight: 600;"
+          style="color: #ef4444; font-size: 0.82rem; margin-top: -8px; margin-bottom: 12px; font-weight: 600;"
         >
-          Introduce tu nombre antes de entrar
+          Introduce tu nombre antes de continuar
         </p>
 
         <!-- Botón Principal: ENTRAR COMO EMPLEADO -->
         <button
           type="button"
           data-select-role="empleado"
-          class="submit-btn"
-          style="background: #d3a548; border: none; border-radius: 10px; padding: 14px; color: #000; font-size: 1.02rem; font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; width: 100%; transition: transform 0.2s; margin-top: 4px;"
+          class="submit-btn flex items-center justify-center gap-2"
+          style="background: #d3a548; border: none; border-radius: 10px; padding: 14px; color: #000; font-size: 0.96rem; font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; width: 100%; transition: transform 0.2s; margin-top: 4px;"
         >
-          ENTRAR COMO EMPLEADO
+          <svg class="w-4 h-4 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          <span>ENTRAR COMO EMPLEADO</span>
         </button>
 
-        <!-- Botón Secundario: ENCARGADO / VERIFICADOR (con PIN) -->
+        <!-- Botón Secundario: ENCARGADO / VERIFICADOR (con silueta de escudo/candado sutil) -->
         <button
           type="button"
           data-select-role="encargado"
-          class="btn-outline-gold"
-          style="border-radius: 10px; padding: 12px; font-size: 0.92rem; width: 100%; margin-top: 10px;"
+          class="btn-outline-gold flex items-center justify-center gap-2"
+          style="border-radius: 10px; padding: 12px; font-size: 0.9rem; width: 100%; margin-top: 10px;"
         >
-          🔐 ENTRAR COMO ENCARGADO
+          <svg class="w-4 h-4 stroke-[2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span>ENTRAR COMO ENCARGADO</span>
         </button>
 
-        <!-- Botones Inferiores Idénticos a Inventario Coctelería Lovo -->
+        <!-- Botones Inferiores con Siluetas Minimalistas -->
         <div style="margin-top: 22px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
           <button
             id="install-app-btn"
             type="button"
-            style="width: fit-content; margin: 0 auto; font-size: 0.85rem; padding: 8px 16px; background-color: #f59e0b; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;"
+            class="inline-flex items-center gap-2"
+            style="width: fit-content; margin: 0 auto; font-size: 0.82rem; padding: 8px 16px; background-color: rgba(211, 165, 72, 0.16); color: #f0ca75; border: 1px solid rgba(211, 165, 72, 0.45); font-weight: 600; border-radius: 8px; cursor: pointer;"
           >
-            📲 Instalar App en el Móvil
+            <svg class="w-4 h-4 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <span>Instalar App en el Móvil</span>
           </button>
           <button
             id="btn-open-config-login"
             type="button"
-            style="width: fit-content; margin: 0 auto; font-size: 0.75rem; padding: 5px 12px; background: transparent; color: #d3a548; border: 1px solid #d3a548; border-radius: 8px; cursor: pointer;"
+            class="inline-flex items-center gap-1.5"
+            style="width: fit-content; margin: 0 auto; font-size: 0.74rem; padding: 5px 12px; background: transparent; color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(211, 165, 72, 0.3); border-radius: 8px; cursor: pointer;"
           >
-            Configurar Conexión Supabase
+            <svg class="w-3.5 h-3.5 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Configurar Conexión Supabase</span>
           </button>
         </div>
       </div>
 
-      <!-- Punto 6: Animación "CHEERS!" idéntica a Inventario Coctelería Lovo al autenticarse -->
+      <!-- Transición "CHEERS!" con Silueta de Copa Minimalista -->
       <div
         id="login-cheers-box"
         class="hidden"
-        style="padding: 30px 10px; text-align: center;"
+        style="padding: 28px 10px; text-align: center;"
       >
-        <h3 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #d3a548; margin: 0 0 10px 0; font-weight: 800;">
-          CHEERS! 🍸
+        <div class="w-12 h-12 rounded-full bg-[#d3a548]/15 border border-[#d3a548]/40 flex items-center justify-center mx-auto mb-3 text-[#d3a548]">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16l-8 9v6m-4 0h8"/>
+          </svg>
+        </div>
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 2rem; color: #d3a548; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 0.04em;">
+          CHEERS!
         </h3>
-        <p style="font-size: 1.05rem; color: #ffffff; font-family: 'Inter', sans-serif; margin: 6px 0;">
+        <p style="font-size: 1rem; color: #ffffff; font-family: 'Inter', sans-serif; margin: 6px 0;">
           Bienvenido/a, <span id="cheers-user-name" style="color: #d3a548; font-weight: 700;"></span>
         </p>
-        <p id="cheers-user-role" style="font-size: 0.85rem; color: rgba(255,255,255,0.7); font-family: 'Inter', sans-serif; margin-top: 4px;"></p>
+        <p id="cheers-user-role" style="font-size: 0.82rem; color: rgba(255,255,255,0.65); font-family: 'Inter', sans-serif; margin-top: 4px;"></p>
       </div>
     </div>
 
@@ -177,7 +200,7 @@
        ======================================================================== -->
   <div id="app-screen" class="hidden min-h-dvh pb-24 relative z-10">
 
-    <!-- Cabecera Superior Pegajosa (Estilo Oficial Inventario LoVo) -->
+    <!-- Cabecera Superior Pegajosa -->
     <header class="sticky top-0 z-30 lovo-header-sticky">
       <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
         <div class="flex items-center gap-3 min-w-0">
@@ -194,10 +217,13 @@
               <span id="header-user-role-badge">Empleado</span>
             </div>
             <div class="flex items-center gap-1.5 mt-1 text-xs text-white/75 truncate">
-              <span>👤 <strong id="header-user-name" class="text-white"></strong></span>
+              <svg class="w-3.5 h-3.5 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <strong id="header-user-name" class="text-white"></strong>
               <span>•</span>
               <button id="btn-switch-role" type="button" class="text-[#d3a548] hover:underline font-semibold">
-                Cambiar usuario/rol
+                Cambiar perfil
               </button>
             </div>
           </div>
@@ -288,7 +314,13 @@
           </div>
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-photos" class="block text-base font-extrabold text-[#f0ca75]">0</span>
-            <span class="text-[10px] text-white/70">📷 Fotos</span>
+            <span class="text-[10px] text-white/70 inline-flex items-center justify-center gap-1">
+              <svg class="w-3 h-3 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span>Fotos</span>
+            </span>
           </div>
         </div>
       </section>
@@ -342,8 +374,11 @@
 
         <!-- Cajón Desplegable para Agregar Tarea (Exclusivo Encargado) -->
         <div id="add-task-drawer" class="hidden lovo-glass-gold rounded-2xl p-4">
-          <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5">
-            ➕ Agregar Nueva Tarea al Cierre (Exclusivo Encargado)
+          <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Agregar Nueva Tarea al Cierre</span>
           </h3>
           <form id="custom-task-form" class="space-y-2.5">
             <div>
@@ -394,7 +429,7 @@
           </form>
         </div>
 
-        <!-- Píldoras de Categorías (Estilo Inventario LoVo) -->
+        <!-- Píldoras de Categorías -->
         <div id="category-pills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
       </section>
 
@@ -427,19 +462,25 @@
 
           <!-- 1. Supervisión de Responsables del Equipo -->
           <div>
-            <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5">
-              👥 Rendimiento y Tareas por Responsable
+            <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5 flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span>Rendimiento y Tareas por Responsable</span>
             </h3>
             <div id="team-breakdown-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
 
-          <!-- Punto 5: Gestión de Empleados Habituales y PIN de Encargado -->
+          <!-- Gestión de Empleados Habituales y PIN de Encargado -->
           <div class="p-4 rounded-2xl bg-black/25 border border-[#d3a548]/25 space-y-3">
             <div class="flex items-center justify-between flex-wrap gap-2">
-              <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548]">
-                ⚡ Plantilla Rápida de Empleados (Selector de Inicio)
+              <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                </svg>
+                <span>Plantilla Rápida de Empleados</span>
               </h3>
-              <span class="text-[11px] text-white/60">Toca ✕ para quitar un nombre</span>
+              <span class="text-[11px] text-white/60">Pulsa × para quitar un nombre</span>
             </div>
 
             <div id="supervisor-team-chips" class="flex flex-wrap gap-1.5"></div>
@@ -458,7 +499,12 @@
 
             <!-- Cambiar PIN del Encargado -->
             <div class="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
-              <span class="text-xs text-white/80 font-medium">🔐 PIN de Acceso Encargado:</span>
+              <span class="text-xs text-white/80 font-medium inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span>PIN de Acceso Encargado:</span>
+              </span>
               <div class="flex items-center gap-2">
                 <input
                   id="change-supervisor-pin-input"
@@ -481,8 +527,11 @@
           <!-- 2. Registro de Fecha y Hora Exacta del Cierre -->
           <div class="p-3.5 rounded-2xl bg-black/30 border border-[#d3a548]/30 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-[11px] font-bold uppercase tracking-wider text-white/80">
-                🕒 Registro Oficial de Fecha y Hora de Cierre
+              <p class="text-[11px] font-bold uppercase tracking-wider text-white/80 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Registro Oficial de Fecha y Hora de Cierre</span>
               </p>
               <p id="closing-timestamp-display" class="text-xs text-[#d3a548] italic mt-0.5">
                 Pendiente de sellar hora de cierre...
@@ -500,8 +549,11 @@
           <!-- 3. Comentarios Adicionales del Encargado -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <label for="general-notes-input" class="font-serif-lovo text-sm font-bold text-[#d3a548]">
-                🗒️ Comentarios del Encargado (Cajas de cerveza, stock, incidencias)
+              <label for="general-notes-input" class="font-serif-lovo text-sm font-bold text-[#d3a548] flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span>Comentarios del Encargado (Cajas, stock, incidencias)</span>
               </label>
               <span id="notes-sync-indicator" class="text-[11px] text-white/60">Sincronizado</span>
             </div>
@@ -516,8 +568,11 @@
           <!-- 4. Previsualización del Mensaje de WhatsApp -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <span class="font-serif-lovo text-sm font-bold text-[#d3a548]">
-                📲 Vista Previa del Reporte Oficial (+34 678 14 69 56)
+              <span class="font-serif-lovo text-sm font-bold text-[#d3a548] flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                <span>Vista Previa del Reporte Oficial (+34 678 14 69 56)</span>
               </span>
               <button
                 id="btn-copy-report"
@@ -550,7 +605,7 @@
               <button
                 id="btn-reset-shift"
                 type="button"
-                class="text-xs text-[#ef4444] border border-[#ef4444]/60 hover:bg-[#ef4444]/15 px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1"
+                class="text-xs text-[#ef4444] border border-[#ef4444]/60 hover:bg-[#ef4444]/15 px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -560,10 +615,13 @@
             </div>
           </div>
 
-          <!-- Punto 6: Historial de Cierres Anteriores -->
+          <!-- Historial de Cierres Anteriores -->
           <div class="pt-4 border-t border-[#d3a548]/30">
-            <h3 class="font-serif-lovo text-base font-bold text-[#d3a548] mb-2.5">
-              📜 Historial de Cierres Anteriores
+            <h3 class="font-serif-lovo text-base font-bold text-[#d3a548] mb-2.5 flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>Historial de Cierres Anteriores</span>
             </h3>
             <div id="shift-history-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
           </div>
@@ -577,7 +635,7 @@
   </div>
 
   <!-- ========================================================================
-       MODAL VISOR DE FOTO DE VERIFICACIÓN (PUNTO 3)
+       MODAL VISOR DE FOTO DE VERIFICACIÓN
        ======================================================================== -->
   <div id="photo-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md lovo-glass-gold rounded-3xl p-5 text-center relative">
@@ -597,9 +655,12 @@
         <button
           id="btn-delete-photo"
           type="button"
-          class="text-xs text-[#ef4444] border border-[#ef4444]/60 hover:bg-[#ef4444]/15 px-3 py-2 rounded-xl font-semibold"
+          class="text-xs text-[#ef4444] border border-[#ef4444]/60 hover:bg-[#ef4444]/15 px-3 py-2 rounded-xl font-semibold inline-flex items-center gap-1.5"
         >
-          🗑️ Borrar Foto
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          <span>Eliminar Foto</span>
         </button>
         <button
           id="btn-close-photo-modal-bottom"
@@ -613,24 +674,24 @@
   </div>
 
   <!-- ========================================================================
-       MODAL CELEBRACIÓN "¡CHEERS! CIERRE 100% COMPLETADO" (PUNTO 6)
+       MODAL CELEBRACIÓN "¡CHEERS! CIERRE 100% COMPLETADO"
        ======================================================================== -->
   <div id="cheers-100-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-sm lovo-glass-gold rounded-3xl p-7 text-center relative">
       <img src="/logo_lovo.png" alt="LoVo" class="w-20 h-20 mx-auto mb-3 object-contain" />
-      <h3 class="font-serif-lovo text-3xl font-extrabold text-[#d3a548]">¡CHEERS! 🍾</h3>
+      <h3 class="font-serif-lovo text-3xl font-extrabold text-[#d3a548] tracking-wide">CHEERS!</h3>
       <p class="text-sm font-bold text-white mt-2">
-        ¡100% de las tareas del cierre nocturno completadas!
+        100% de las tareas del cierre nocturno completadas
       </p>
       <p class="text-xs text-white/70 mt-1 mb-5">
-        El Encargado ya puede revisar el panel final y enviar el reporte oficial por WhatsApp.
+        El Encargado ya puede revisar el panel final y emitir el reporte oficial por WhatsApp.
       </p>
       <button
         id="btn-close-cheers-100"
         type="button"
         class="submit-btn w-full py-3 text-sm font-extrabold"
       >
-        ¡GENIAL!
+        CONTINUAR
       </button>
     </div>
   </div>
@@ -707,9 +768,9 @@
     </div>
   </div>
 
-  <!-- Scripts de la Aplicación (con versión anti-caché v6) -->
-  <script src="/js/config.js?v=6"></script>
-  <script src="/js/supabase-client.js?v=6"></script>
-  <script src="/js/app.js?v=6"></script>
+  <!-- Scripts de la Aplicación (con versión anti-caché v7) -->
+  <script src="/js/config.js?v=7"></script>
+  <script src="/js/supabase-client.js?v=7"></script>
+  <script src="/js/app.js?v=7"></script>
 </body>
 </html>
