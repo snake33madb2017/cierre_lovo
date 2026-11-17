@@ -91,6 +91,8 @@
     dom.qrUrlText = document.getElementById('qr-url-text');
 
     dom.btnOpenConfigModal = document.getElementById('btn-open-config-modal');
+    dom.btnOpenConfigLogin = document.getElementById('btn-open-config-login');
+    dom.installAppBtn = document.getElementById('install-app-btn');
     dom.configModal = document.getElementById('config-modal');
     dom.btnCloseConfigModal = document.getElementById('btn-close-config-modal');
     dom.configSupabaseUrl = document.getElementById('config-supabase-url');
@@ -100,6 +102,12 @@
     // Toast
     dom.toastContainer = document.getElementById('toast-container');
   }
+
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+  });
 
   // =========================================================================
   // INICIALIZACIÓN
@@ -126,9 +134,14 @@
 
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('Service Worker opcional no registrado:', err);
-      });
+      navigator.serviceWorker
+        .register('/sw.js?v=5')
+        .then((reg) => {
+          reg.update();
+        })
+        .catch((err) => {
+          console.warn('Service Worker opcional no registrado:', err);
+        });
     }
   }
 
@@ -1049,6 +1062,24 @@
         dom.configSupabaseUrl.value = window.LoVoConfig.SUPABASE_URL || '';
         dom.configSupabaseKey.value = window.LoVoConfig.SUPABASE_ANON_KEY || '';
         dom.configModal.classList.remove('hidden');
+      });
+    }
+    if (dom.btnOpenConfigLogin && dom.configModal) {
+      dom.btnOpenConfigLogin.addEventListener('click', () => {
+        dom.configSupabaseUrl.value = window.LoVoConfig.SUPABASE_URL || '';
+        dom.configSupabaseKey.value = window.LoVoConfig.SUPABASE_ANON_KEY || '';
+        dom.configModal.classList.remove('hidden');
+      });
+    }
+    if (dom.installAppBtn) {
+      dom.installAppBtn.addEventListener('click', async () => {
+        if (deferredInstallPrompt) {
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+        } else {
+          showToast('En iPhone/Android: pulsa Compartir o Menú ⋮ → "Añadir a pantalla de inicio"');
+        }
       });
     }
     if (dom.connectionBadge) {

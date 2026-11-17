@@ -46,7 +46,6 @@ function sendJson(res, statusCode, payload) {
 function serveStaticFile(req, res, filePath) {
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback SPA a index.html
       const indexFile = path.join(PUBLIC_DIR, 'index.html');
       return fs.readFile(indexFile, (readErr, content) => {
         if (readErr) {
@@ -55,7 +54,7 @@ function serveStaticFile(req, res, filePath) {
         }
         res.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-store, no-cache, must-revalidate'
         });
         res.end(content);
       });
@@ -63,14 +62,11 @@ function serveStaticFile(req, res, filePath) {
 
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    const isNoCache =
-      filePath.endsWith('sw.js') ||
-      filePath.endsWith('index.html') ||
-      filePath.endsWith('manifest.json');
 
+    // Evitar que el navegador o el Service Worker sirvan CSS/JS antiguos en caché
     const headers = {
       'Content-Type': contentType,
-      'Cache-Control': isNoCache ? 'no-cache' : 'public, max-age=3600'
+      'Cache-Control': 'no-cache, must-revalidate'
     };
 
     const acceptEncoding = req.headers['accept-encoding'] || '';
@@ -91,7 +87,6 @@ const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = decodeURIComponent(parsedUrl.pathname);
 
-  // 1. Health Check para Render
   if (pathname === '/healthz') {
     return sendJson(res, 200, {
       status: 'ok',
@@ -100,7 +95,6 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // 2. Configuración dinámica para el cliente de Supabase
   if (pathname === '/api/config') {
     return sendJson(res, 200, {
       SUPABASE_URL: process.env.SUPABASE_URL || '',
@@ -109,7 +103,6 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  // 3. Archivos estáticos de la PWA
   const safeSuffix = path.normalize(pathname).replace(/^(\.\.[/\\])+/, '');
   const targetPath = path.join(PUBLIC_DIR, safeSuffix === path.sep || safeSuffix === '.' ? 'index.html' : safeSuffix);
 

@@ -1,11 +1,11 @@
-const CACHE_NAME = 'lovo-cierre-pwa-v2';
+const CACHE_NAME = 'lovo-cierre-pwa-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/css/styles.css',
-  '/js/config.js',
-  '/js/supabase-client.js',
-  '/js/app.js',
+  '/css/styles.css?v=5',
+  '/js/config.js?v=5',
+  '/js/supabase-client.js?v=5',
+  '/js/app.js?v=5',
   '/manifest.json',
   '/logo_lovo.png'
 ];
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-cache' })
       .then((response) => {
         const cloned = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -9,13 +9,13 @@
   <meta name="apple-mobile-web-app-title" content="LoVo Cierre" />
   <meta name="description" content="Aplicación web interactiva en tiempo real para el cierre de turno nocturno de la Coctelería LoVo." />
 
-  <title>Cierre Coctelería LoVo — Tiempo Real</title>
+  <title>Cierre Coctelería Lovo</title>
 
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/logo_lovo.png" />
   <link rel="apple-touch-icon" href="/logo_lovo.png" />
 
-  <!-- Tipografías Oficiales de Coctelería LoVo (Idénticas a Inventario LoVo) -->
+  <!-- Google Fonts Oficiales de Inventario Coctelería Lovo -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
@@ -26,12 +26,12 @@
   <!-- Cliente Oficial de Supabase (Realtime + Postgres Changes + Presence) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Estilos Oficiales LoVo (Navy Blue #081933 + Gold #d3a548) -->
-  <link rel="stylesheet" href="/css/styles.css" />
+  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché) -->
+  <link rel="stylesheet" href="/css/styles.css?v=5" />
 </head>
-<body class="antialiased selection:bg-[#d3a548] selection:text-[#081933]">
+<body style="background-color: #081933; color: #ffffff;">
 
-  <!-- Luces Bokeh Animadas de Fondo (Idénticas a Inventario LoVo) -->
+  <!-- Luces Bokeh de Fondo (Idénticas a Inventario Coctelería Lovo) -->
   <div class="bokeh-container" id="bokeh-container">
     <div class="bokeh b1"></div>
     <div class="bokeh b2"></div>
@@ -42,98 +42,82 @@
   <div id="toast-container" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-80 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- ========================================================================
-       PANTALLA 1: BIENVENIDA Y SELECCIÓN DE ROL ([Empleado] vs [Encargado])
+       PANTALLA 1: LOGIN / SELECCIÓN DE ROL (100% IDÉNTICA A INVENTARIO LOVO)
        ======================================================================== -->
   <main id="role-screen" class="min-h-dvh flex flex-col justify-center items-center px-4 py-10 relative z-10">
     <div class="glass-login-container">
-      <!-- Logo Oficial de Coctelería LoVo -->
       <img
         src="/logo_lovo.png"
-        alt="Logo Coctelería LoVo"
-        style="width: 120px; display: block; margin: 0 auto 14px auto;"
+        alt="Logo Lovo"
+        style="width: 120px; display: block; margin: 0 auto 15px auto;"
       />
-
-      <h1
-        style="font-family: 'Playfair Display', serif; color: var(--primary-color); font-size: 1.55rem; font-weight: 700; margin-bottom: 6px;"
+      <h2
+        id="card-title"
+        style="font-family: 'Playfair Display', serif; color: #d3a548; font-size: 1.55rem; font-weight: 700; margin-bottom: 24px; line-height: 1.25;"
       >
-        Cierre Coctelería LoVo
-      </h1>
-      <p class="font-baskervville italic text-xs text-white/70 mb-6">
-        Checklist interactivo en tiempo real • Turno Nocturno
-      </p>
+        Cierre Coctelería<br />Lovo
+      </h2>
 
-      <!-- Paso 1: Nombre o ID con Floating Label (Estilo Inventario LoVo) -->
+      <!-- Campo 1: Nombre o ID del Empleado (Mismo estilo que DNI/NIE) -->
       <div class="input-group">
         <input
-          id="user-name-input"
           type="text"
+          id="user-name-input"
           required
           placeholder=" "
-          autocomplete="name"
+          autocomplete="off"
         />
-        <label for="user-name-input">Tu Nombre o ID (Ej: Carlos, Barra 1)</label>
+        <label for="user-name-input">Nombre / ID (Ej: Marco, Barra 1)</label>
       </div>
 
-      <p id="role-error-msg" class="hidden text-xs text-[#ef4444] -mt-3 mb-4 font-semibold text-left">
-        ⚠️ Escribe tu nombre o ID antes de elegir tu rol.
+      <p
+        id="role-error-msg"
+        class="hidden"
+        style="color: #ef4444; font-size: 0.85rem; margin-top: -10px; margin-bottom: 14px; font-weight: 600;"
+      >
+        Introduce tu nombre antes de entrar
       </p>
 
-      <!-- Paso 2: Selección de Rol -->
-      <div class="text-left space-y-3 mt-2">
-        <p
-          style="font-family: 'Playfair Display', serif; color: var(--primary-color); font-size: 0.9rem; font-weight: 700;"
-          class="text-center mb-2"
-        >
-          Selecciona tu Rol de Acceso
-        </p>
+      <!-- Botón Principal: ENTRAR COMO EMPLEADO (Idéntico al botón BIENVENIDO) -->
+      <button
+        type="button"
+        data-select-role="empleado"
+        class="submit-btn"
+        style="background: #d3a548; border: none; border-radius: 10px; padding: 14px; color: #000; font-size: 1.02rem; font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; width: 100%; transition: transform 0.2s; margin-top: 4px;"
+      >
+        ENTRAR COMO EMPLEADO
+      </button>
 
-        <!-- Botón Rol Empleado -->
+      <!-- Botón Secundario: ENCARGADO / VERIFICADOR -->
+      <button
+        type="button"
+        data-select-role="encargado"
+        class="btn-outline-gold"
+        style="border-radius: 10px; padding: 12px; font-size: 0.92rem; width: 100%; margin-top: 10px;"
+      >
+        🛡️ ENTRAR COMO ENCARGADO
+      </button>
+
+      <!-- Botones Inferiores Idénticos a Inventario Coctelería Lovo -->
+      <div style="margin-top: 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
         <button
+          id="install-app-btn"
           type="button"
-          data-select-role="empleado"
-          class="w-full text-left p-3.5 rounded-xl bg-black/25 hover:bg-black/40 border border-[#d3a548]/35 hover:border-[#d3a548] transition group flex items-center gap-3.5"
+          style="width: fit-content; margin: 0 auto; font-size: 0.85rem; padding: 8px 16px; background-color: #f59e0b; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;"
         >
-          <div class="w-11 h-11 rounded-xl bg-[#d3a548]/15 border border-[#d3a548]/40 flex items-center justify-center text-[#d3a548] shrink-0 group-hover:scale-105 transition">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-bold text-white group-hover:text-[#d3a548] transition">EMPLEADO</span>
-              <span class="text-xs text-[#d3a548] font-bold">Entrar →</span>
-            </div>
-            <p class="text-[11px] text-white/65 mt-0.5 leading-snug">
-              Marcar tareas, reclamar responsabilidad y añadir imprevistos.
-            </p>
-          </div>
+          📲 Instalar App en el Móvil
         </button>
-
-        <!-- Botón Rol Encargado / Verificador -->
         <button
+          id="btn-open-config-login"
           type="button"
-          data-select-role="encargado"
-          class="submit-btn w-full text-left p-3.5 rounded-xl flex items-center gap-3.5"
+          style="width: fit-content; margin: 0 auto; font-size: 0.75rem; padding: 5px 12px; background: transparent; color: #d3a548; border: 1px solid #d3a548; border-radius: 8px; cursor: pointer;"
         >
-          <div class="w-11 h-11 rounded-xl bg-[#081933] text-[#d3a548] flex items-center justify-center shrink-0 shadow">
-            <svg class="w-6 h-6 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-extrabold text-[#081933]">ENCARGADO / VERIFICADOR</span>
-              <span class="text-xs font-extrabold text-[#081933]">Supervisar →</span>
-            </div>
-            <p class="text-[11px] text-[#081933]/85 font-medium mt-0.5 leading-snug">
-              Supervisión global, control de cierre y envío oficial a WhatsApp.
-            </p>
-          </div>
+          Configurar Conexión Supabase
         </button>
       </div>
     </div>
 
-    <div class="mt-6 text-center text-white/40 text-xs font-sans">
+    <div style="margin-top: 18px; width: 100%; text-align: center; color: rgba(255, 255, 255, 0.45); font-size: 0.8rem; font-family: 'Inter', sans-serif;">
       Desarrollado por @MDev - Marco Daza 2026
     </div>
   </main>
@@ -159,7 +143,7 @@
               </h2>
               <span id="header-user-role-badge">Empleado</span>
             </div>
-            <div class="flex items-center gap-1.5 mt-1 text-xs text-white/70 truncate">
+            <div class="flex items-center gap-1.5 mt-1 text-xs text-white/75 truncate">
               <span>👤 <strong id="header-user-name" class="text-white"></strong></span>
               <span>•</span>
               <button id="btn-switch-role" type="button" class="text-[#d3a548] hover:underline font-semibold">
@@ -175,7 +159,7 @@
             id="btn-open-qr-modal"
             type="button"
             title="Mostrar Código QR para los 15 empleados"
-            class="px-2.5 py-2 rounded-xl bg-black/30 hover:bg-black/45 text-[#d3a548] border border-[#d3a548]/40 transition flex items-center gap-1.5 text-xs font-bold"
+            class="px-2.5 py-2 rounded-xl bg-black/30 hover:bg-black/45 text-[#d3a548] border border-[#d3a548]/45 transition flex items-center gap-1.5 text-xs font-bold"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
@@ -187,7 +171,7 @@
             id="btn-open-config-modal"
             type="button"
             title="Configuración de conexión Supabase"
-            class="p-2 rounded-xl bg-black/30 hover:bg-black/45 text-white/70 hover:text-[#d3a548] border border-[#d3a548]/25 transition"
+            class="p-2 rounded-xl bg-black/30 hover:bg-black/45 text-white/75 hover:text-[#d3a548] border border-[#d3a548]/30 transition"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -208,7 +192,7 @@
             <span id="connection-text">Conectando...</span>
           </div>
 
-          <div class="inline-flex items-center gap-1.5 text-xs text-white/80">
+          <div class="inline-flex items-center gap-1.5 text-xs text-white/85">
             <svg class="w-4 h-4 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
@@ -225,12 +209,12 @@
         <div class="flex items-baseline justify-between mb-2">
           <div>
             <p class="font-serif-lovo text-sm font-bold text-[#d3a548]">Progreso del Cierre Nocturno</p>
-            <p id="progress-text" class="text-xs text-white/80 font-medium mt-0.5">0 de 20 tareas completadas</p>
+            <p id="progress-text" class="text-xs text-white/85 font-medium mt-0.5">0 de 20 tareas completadas</p>
           </div>
           <span id="progress-percent" class="font-serif-lovo text-3xl font-extrabold text-[#d3a548]">0%</span>
         </div>
 
-        <div class="w-full h-3 rounded-full bg-black/40 border border-[#d3a548]/30 overflow-hidden p-0.5">
+        <div class="w-full h-3 rounded-full bg-black/40 border border-[#d3a548]/35 overflow-hidden p-0.5">
           <div
             id="progress-bar-fill"
             class="h-full rounded-full bg-gradient-to-r from-[#d3a548] via-[#f0ca75] to-[#10b981] transition-all duration-500"
@@ -239,18 +223,18 @@
         </div>
 
         <!-- Mini contadores -->
-        <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-[#d3a548]/20 text-center">
+        <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-[#d3a548]/25 text-center">
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-completed" class="block text-base font-extrabold text-[#10b981]">0</span>
-            <span class="text-[11px] text-white/65">Completadas</span>
+            <span class="text-[11px] text-white/70">Completadas</span>
           </div>
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-pending" class="block text-base font-extrabold text-[#d3a548]">20</span>
-            <span class="text-[11px] text-white/65">Pendientes</span>
+            <span class="text-[11px] text-white/70">Pendientes</span>
           </div>
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-unassigned" class="block text-base font-extrabold text-white">20</span>
-            <span class="text-[11px] text-white/65">Sin asignar</span>
+            <span class="text-[11px] text-white/70">Sin asignar</span>
           </div>
         </div>
       </section>
@@ -262,13 +246,13 @@
           <button type="button" data-filter-status="all" class="flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-[#d3a548] text-[#081933] shadow transition">
             Todas
           </button>
-          <button type="button" data-filter-status="pending" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition">
+          <button type="button" data-filter-status="pending" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/75 hover:text-white transition">
             Pendientes
           </button>
-          <button type="button" data-filter-status="mine" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition">
+          <button type="button" data-filter-status="mine" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/75 hover:text-white transition">
             Mis Tareas
           </button>
-          <button type="button" data-filter-status="completed" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition">
+          <button type="button" data-filter-status="completed" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/75 hover:text-white transition">
             Hechas
           </button>
         </div>
@@ -379,7 +363,7 @@
               <h2 class="font-serif-lovo text-xl sm:text-2xl font-bold text-[#d3a548]">
                 Supervisión Global y Cierre Oficial
               </h2>
-              <p class="text-xs text-white/70 mt-0.5">
+              <p class="text-xs text-white/75 mt-0.5">
                 Verifica los responsables, añade observaciones de cierre y envía el parte oficial por WhatsApp.
               </p>
             </div>
@@ -396,7 +380,7 @@
           <!-- 2. Registro de Fecha y Hora Exacta del Cierre -->
           <div class="p-3.5 rounded-2xl bg-black/30 border border-[#d3a548]/30 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-[11px] font-bold uppercase tracking-wider text-white/75">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-white/80">
                 🕒 Registro Oficial de Fecha y Hora de Cierre
               </p>
               <p id="closing-timestamp-display" class="text-xs text-[#d3a548] italic mt-0.5">
@@ -418,7 +402,7 @@
               <label for="general-notes-input" class="font-serif-lovo text-sm font-bold text-[#d3a548]">
                 🗒️ Comentarios del Encargado (Cajas de cerveza, stock, incidencias)
               </label>
-              <span id="notes-sync-indicator" class="text-[11px] text-white/55">Sincronizado</span>
+              <span id="notes-sync-indicator" class="text-[11px] text-white/60">Sincronizado</span>
             </div>
             <textarea
               id="general-notes-input"
@@ -477,7 +461,7 @@
         </div>
       </section>
 
-      <footer class="pt-6 pb-4 text-center text-white/40 text-xs">
+      <footer class="pt-6 pb-4 text-center text-white/45 text-xs">
         Coctelería LoVo • Desarrollado por @MDev - Marco Daza 2026
       </footer>
     </div>
@@ -498,7 +482,7 @@
       <img src="/logo_lovo.png" alt="Logo LoVo" class="w-16 h-16 mx-auto mb-2 object-contain" />
       <p class="text-[11px] uppercase tracking-widest text-[#d3a548] font-bold">Acceso Rápido Multi-Usuario</p>
       <h3 class="font-serif-lovo text-2xl font-bold text-white mt-1">Código QR Equipo LoVo</h3>
-      <p class="text-xs text-white/70 mt-1 mb-4">
+      <p class="text-xs text-white/75 mt-1 mb-4">
         Los 15 empleados pueden escanear este QR con su cámara para unirse al cierre en tiempo real.
       </p>
       <div class="inline-block p-3 rounded-2xl bg-[#f0ca75] shadow-xl mx-auto">
@@ -522,12 +506,12 @@
       </button>
       <p class="text-[11px] uppercase tracking-widest text-[#d3a548] font-bold">Conexión Base de Datos</p>
       <h3 class="font-serif-lovo text-xl font-bold text-white mt-1">Parámetros de Supabase</h3>
-      <p class="text-xs text-white/70 mt-1 mb-4">
+      <p class="text-xs text-white/75 mt-1 mb-4">
         En Render se cargan automáticamente desde las variables de entorno <code class="text-[#d3a548]">SUPABASE_URL</code> y <code class="text-[#d3a548]">SUPABASE_ANON_KEY</code>. También puedes definirlas aquí:
       </p>
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-white/80 mb-1">SUPABASE_URL</label>
+          <label class="block text-xs font-semibold text-white/85 mb-1">SUPABASE_URL</label>
           <input
             id="config-supabase-url"
             type="url"
@@ -536,7 +520,7 @@
           />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-white/80 mb-1">SUPABASE_ANON_KEY</label>
+          <label class="block text-xs font-semibold text-white/85 mb-1">SUPABASE_ANON_KEY</label>
           <input
             id="config-supabase-key"
             type="password"
@@ -555,9 +539,9 @@
     </div>
   </div>
 
-  <!-- Scripts de la Aplicación -->
-  <script src="/js/config.js"></script>
-  <script src="/js/supabase-client.js"></script>
-  <script src="/js/app.js"></script>
+  <!-- Scripts de la Aplicación (con versión anti-caché) -->
+  <script src="/js/config.js?v=5"></script>
+  <script src="/js/supabase-client.js?v=5"></script>
+  <script src="/js/app.js?v=5"></script>
 </body>
 </html>
