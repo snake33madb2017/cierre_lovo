@@ -4,10 +4,9 @@
 -- Instrucciones:
 -- 1. Abre tu proyecto en https://supabase.com
 -- 2. Ve a "SQL Editor" -> "New Query"
--- 3. Pega todo este contenido y pulsa "Run"
+-- 3. Pega todo este contenido y pulsa "Run" (es seguro ejecutarlo varias veces)
 -- ============================================================================
 
--- Extensión para generar UUIDs
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- 1. TABLA DE TAREAS EN TIEMPO REAL (lovo_tasks)
@@ -20,12 +19,16 @@ CREATE TABLE IF NOT EXISTS public.lovo_tasks (
     assigned_to TEXT NOT NULL DEFAULT '',
     completed_by TEXT NOT NULL DEFAULT '',
     notes TEXT NOT NULL DEFAULT '',
+    photo_url TEXT NOT NULL DEFAULT '',
     requires_note BOOLEAN NOT NULL DEFAULT FALSE,
     is_custom BOOLEAN NOT NULL DEFAULT FALSE,
     completed_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Asegurar columna photo_url si la tabla ya existía antes
+ALTER TABLE public.lovo_tasks ADD COLUMN IF NOT EXISTS photo_url TEXT NOT NULL DEFAULT '';
 
 -- 2. TABLA DE ESTADO GLOBAL DEL TURNO ACTUAL (lovo_shift_state)
 CREATE TABLE IF NOT EXISTS public.lovo_shift_state (
@@ -35,8 +38,17 @@ CREATE TABLE IF NOT EXISTS public.lovo_shift_state (
     closed_by TEXT NOT NULL DEFAULT '',
     is_closed BOOLEAN NOT NULL DEFAULT FALSE,
     closed_at TIMESTAMPTZ,
+    team_members JSONB NOT NULL DEFAULT '["Marco", "Carlos", "Lucía", "Javi", "Sofía", "Alex", "Marta", "Dani"]'::jsonb,
+    supervisor_pin TEXT NOT NULL DEFAULT '1234',
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Asegurar columnas nuevas si la tabla ya existía antes
+ALTER TABLE public.lovo_shift_state
+ADD COLUMN IF NOT EXISTS team_members JSONB NOT NULL DEFAULT '["Marco", "Carlos", "Lucía", "Javi", "Sofía", "Alex", "Marta", "Dani"]'::jsonb;
+
+ALTER TABLE public.lovo_shift_state
+ADD COLUMN IF NOT EXISTS supervisor_pin TEXT NOT NULL DEFAULT '1234';
 
 -- 3. TABLA DE HISTÓRICO DE CIERRES (lovo_shift_history)
 CREATE TABLE IF NOT EXISTS public.lovo_shift_history (
@@ -79,7 +91,6 @@ ALTER TABLE public.lovo_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lovo_shift_state ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lovo_shift_history ENABLE ROW LEVEL SECURITY;
 
--- Políticas abiertas para rol anon/authenticated (acceso inmediato por QR)
 DROP POLICY IF EXISTS "Acceso total en tiempo real a lovo_tasks" ON public.lovo_tasks;
 CREATE POLICY "Acceso total en tiempo real a lovo_tasks"
 ON public.lovo_tasks
@@ -134,31 +145,30 @@ INSERT INTO public.lovo_shift_state (id, shift_date, general_notes, is_closed)
 VALUES (1, CURRENT_DATE, '', FALSE)
 ON CONFLICT (id) DO NOTHING;
 
--- Insertar las 20 tareas base solo si la tabla está vacía
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM public.lovo_tasks LIMIT 1) THEN
-        INSERT INTO public.lovo_tasks (order_index, title, category, requires_note, is_custom, notes) VALUES
-        (1,  'Cuartos hechos', 'Limpieza y Sala', FALSE, FALSE, ''),
-        (2,  'Neveras recargadas', 'Barra y Stock', FALSE, FALSE, ''),
-        (3,  'DJ organizado y casado', 'Cabina y Técnica', FALSE, FALSE, ''),
-        (4,  'Barras limpias', 'Barra y Stock', FALSE, FALSE, ''),
-        (5,  'Tapetes lavados', 'Barra y Stock', FALSE, FALSE, ''),
-        (6,  'Basuras sacadas', 'Limpieza y Sala', FALSE, FALSE, ''),
-        (7,  'Office lista', 'Limpieza y Sala', FALSE, FALSE, ''),
-        (8,  '7 Qr (con notas de incidencias)', 'Control y Caja', TRUE, FALSE, ''),
-        (9,  'Vacíos listos', 'Barra y Stock', FALSE, FALSE, ''),
-        (10, 'Cartones afuera', 'Limpieza y Sala', FALSE, FALSE, ''),
-        (11, 'Taburetes arriba', 'Limpieza y Sala', FALSE, FALSE, ''),
-        (12, 'Mesas limpias', 'Limpieza y Sala', FALSE, FALSE, ''),
-        (13, 'Ordenador apagado', 'Cabina y Técnica', FALSE, FALSE, ''),
-        (14, 'Datáfonos cargando', 'Cabina y Técnica', FALSE, FALSE, ''),
-        (15, 'Leds apagados', 'Cabina y Técnica', FALSE, FALSE, ''),
-        (16, 'Puerta abajo y cerrada de la salida de emergencia', 'Seguridad y Cierre', FALSE, FALSE, ''),
-        (17, 'Puerta asegurada', 'Seguridad y Cierre', FALSE, FALSE, ''),
-        (18, '2700€ Aprox (Caja)', 'Control y Caja', TRUE, FALSE, ''),
-        (19, 'Otros / Incidencias controladas', 'Control y Caja', TRUE, FALSE, ''),
-        (20, 'Nadie ha olvidado nada', 'Seguridad y Cierre', FALSE, FALSE, '');
+        INSERT INTO public.lovo_tasks (order_index, title, category, requires_note, is_custom, notes, photo_url) VALUES
+        (1,  'Cuartos hechos', 'Limpieza y Sala', FALSE, FALSE, '', ''),
+        (2,  'Neveras recargadas', 'Barra y Stock', FALSE, FALSE, '', ''),
+        (3,  'DJ organizado y casado', 'Cabina y Técnica', FALSE, FALSE, '', ''),
+        (4,  'Barras limpias', 'Barra y Stock', FALSE, FALSE, '', ''),
+        (5,  'Tapetes lavados', 'Barra y Stock', FALSE, FALSE, '', ''),
+        (6,  'Basuras sacadas', 'Limpieza y Sala', FALSE, FALSE, '', ''),
+        (7,  'Office lista', 'Limpieza y Sala', FALSE, FALSE, '', ''),
+        (8,  '7 Qr (con notas de incidencias)', 'Control y Caja', TRUE, FALSE, '', ''),
+        (9,  'Vacíos listos', 'Barra y Stock', FALSE, FALSE, '', ''),
+        (10, 'Cartones afuera', 'Limpieza y Sala', FALSE, FALSE, '', ''),
+        (11, 'Taburetes arriba', 'Limpieza y Sala', FALSE, FALSE, '', ''),
+        (12, 'Mesas limpias', 'Limpieza y Sala', FALSE, FALSE, '', ''),
+        (13, 'Ordenador apagado', 'Cabina y Técnica', FALSE, FALSE, '', ''),
+        (14, 'Datáfonos cargando', 'Cabina y Técnica', FALSE, FALSE, '', ''),
+        (15, 'Leds apagados', 'Cabina y Técnica', FALSE, FALSE, '', ''),
+        (16, 'Puerta abajo y cerrada de la salida de emergencia', 'Seguridad y Cierre', FALSE, FALSE, '', ''),
+        (17, 'Puerta asegurada', 'Seguridad y Cierre', FALSE, FALSE, '', ''),
+        (18, '2700€ Aprox (Caja)', 'Control y Caja', TRUE, FALSE, '', ''),
+        (19, 'Otros / Incidencias controladas', 'Control y Caja', TRUE, FALSE, '', ''),
+        (20, 'Nadie ha olvidado nada', 'Seguridad y Cierre', FALSE, FALSE, '', '');
     END IF;
 END $$;
 
@@ -171,20 +181,18 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-    -- Eliminar tareas personalizadas de madrugada del turno anterior
     DELETE FROM public.lovo_tasks WHERE is_custom = TRUE;
 
-    -- Reiniciar el estado de las 20 tareas base de LoVo
     UPDATE public.lovo_tasks
     SET
         is_completed = FALSE,
         assigned_to = '',
         completed_by = '',
         notes = '',
+        photo_url = '',
         completed_at = NULL,
         updated_at = NOW();
 
-    -- Reiniciar el estado global del turno
     UPDATE public.lovo_shift_state
     SET
         shift_date = CURRENT_DATE,

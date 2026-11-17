@@ -2,8 +2,10 @@
  * Capa de Datos y Sincronización en Tiempo Real con Supabase
  * Soporta:
  *  - Postgres Changes en tiempo real (lovo_tasks y lovo_shift_state)
- *  - Presence en tiempo real (ver los hasta 15 empleados conectados simultáneamente)
- *  - Modo Local Multi-Pestaña (BroadcastChannel) si aún no se han introducido las claves de Supabase
+ *  - Fotos de verificación comprimidas en tiempo real (photo_url)
+ *  - Plantilla de empleados (team_members) y PIN de Encargado (supervisor_pin)
+ *  - Histórico de cierres (lovo_shift_history)
+ *  - Modo Local Multi-Pestaña (BroadcastChannel) de respaldo
  */
 class LoVoRealtimeService {
   constructor() {
@@ -11,7 +13,8 @@ class LoVoRealtimeService {
     this.channel = null;
     this.isRealtimeConnected = false;
     this.mode = 'local'; // 'supabase' | 'local'
-    this.localBroadcast = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('lovo_local_sync') : null;
+    this.localBroadcast =
+      typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('lovo_local_sync') : null;
 
     this.callbacks = {
       onTasksChanged: () => {},
@@ -53,13 +56,12 @@ class LoVoRealtimeService {
       }
     }
 
-    // Modo Local (respaldo inmediato mientras se configura Supabase)
     this.mode = 'local';
     this.ensureInitialDataLocal();
     this.setupLocalSync(userProfile);
     this.callbacks.onConnectionStatus({
       mode: 'local',
-      message: 'Modo Demo Local (Configura SUPABASE_URL para multi-dispositivo)'
+      message: 'Modo Demo Local (Configura Supabase)'
     });
     return { mode: 'local', connected: false };
   }
@@ -68,7 +70,6 @@ class LoVoRealtimeService {
   // SUPABASE DATA & REALTIME
   // =========================================================================
   async ensureInitialDataSupabase() {
-    // 1. Verificar tareas existentes
     const { data: existingTasks, error: tasksErr } = await this.supabase
       .from('lovo_tasks')
       .select('*')
@@ -93,7 +94,6 @@ class LoVoRealtimeService {
       if (insertErr) throw insertErr;
     }
 
-    // 2. Verificar fila de estado del turno (id = 1)
     const { data: shiftRow, error: shiftErr } = await this.supabase
       .from('lovo_shift_state')
       .select('*')
@@ -125,7 +125,6 @@ class LoVoRealtimeService {
       }
     });
 
-    // Escuchar cambios fila por fila en lovo_tasks sin pisar el trabajo de otros empleados
     this.channel.on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'lovo_tasks' },
@@ -134,7 +133,6 @@ class LoVoRealtimeService {
       }
     );
 
-    // Escuchar cambios en el estado general del cierre (lovo_shift_state)
     this.channel.on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'lovo_shift_state' },
@@ -145,7 +143,6 @@ class LoVoRealtimeService {
       }
     );
 
-    // Escuchar presencia de los empleados conectados (hasta 15+ simultáneos)
     this.channel.on('presence', { event: 'sync' }, () => {
       const state = this.channel.presenceState();
       const onlineUsers = [];
@@ -203,7 +200,7 @@ class LoVoRealtimeService {
   }
 
   // =========================================================================
-  // OPERACIONES CRUD (TAREAS Y ESTADO DE TURNO)
+  // OPERACIONES CRUD (TAREAS, FOTOS, PLANTILLA E HISTORIAL)
   // =========================================================================
   async fetchAllTasks() {
     if (this.mode === 'supabase') {
@@ -232,16 +229,15 @@ class LoVoRealtimeService {
           general_notes: '',
           closed_by: '',
           is_closed: false,
-          closed_at: null
+          closed_at: null,
+          team_members: window.LoVoConfig.DEFAULT_TEAM_MEMBERS,
+          supervisor_pin: window.LoVoConfig.SUPERVISOR_PIN
         }
       );
     }
     return this.getLocalShiftState();
   }
 
-  /**
-   * Actualización atómica de campos específicos de una tarea (evita pisar otros campos)
-   */
   async updateTaskFields(taskId, partialFields) {
     const payload = {
       ...partialFields,
@@ -255,11 +251,18 @@ class LoVoRealtimeService {
         .eq('id', taskId)
         .select()
         .single();
-      if (error) throw error;
+
+      if (error) {
+        // Si la tabla en Supabase aún no tenía la columna photo_url creada, guardamos en localStorage de respaldo sin romper
+        if (partialFields.photo_url !== undefined) {
+          localStorage.setItem(`lovo_photo_${taskId}`, partialFields.photo_url || '');
+          return { id: taskId, ...payload };
+        }
+        throw error;
+      }
       return data;
     }
 
-    // Modo local
     const tasks = this.getLocalTasks();
     const idx = tasks.findIndex((t) => t.id === taskId);
     if (idx !== -1) {
@@ -272,7 +275,7 @@ class LoVoRealtimeService {
   }
 
   /**
-   * Crear nueva tarea imprevista de madrugada
+   * Crear nueva tarea (Exclusivo para el Rol Encargado)
    */
   async createCustomTask({ title, category, assigned_to, notes }) {
     const newTask = {
@@ -301,6 +304,7 @@ class LoVoRealtimeService {
     const created = {
       ...newTask,
       id: `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      photo_url: '',
       completed_at: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -312,15 +316,14 @@ class LoVoRealtimeService {
   }
 
   /**
-   * Eliminar una tarea personalizada de última hora
+   * Eliminar cualquier tarea (Exclusivo para el Rol Encargado)
    */
-  async deleteCustomTask(taskId) {
+  async deleteTask(taskId) {
     if (this.mode === 'supabase') {
       const { error } = await this.supabase
         .from('lovo_tasks')
         .delete()
-        .eq('id', taskId)
-        .eq('is_custom', true);
+        .eq('id', taskId);
       if (error) throw error;
       return true;
     }
@@ -331,9 +334,6 @@ class LoVoRealtimeService {
     return true;
   }
 
-  /**
-   * Actualizar notas generales o cierre oficial del turno
-   */
   async updateShiftState(partialState) {
     const payload = {
       ...partialState,
@@ -347,7 +347,14 @@ class LoVoRealtimeService {
         .eq('id', 1)
         .select()
         .single();
-      if (error) throw error;
+
+      if (error) {
+        // Respaldo local si team_members o supervisor_pin aún no se añadieron al SQL de Supabase
+        const current = this.getLocalShiftState();
+        const merged = { ...current, ...payload };
+        localStorage.setItem('lovo_local_shift_state', JSON.stringify(merged));
+        return merged;
+      }
       return data;
     }
 
@@ -358,31 +365,60 @@ class LoVoRealtimeService {
     return updated;
   }
 
-  /**
-   * Guardar histórico del cierre en Supabase al emitir el reporte final
-   */
   async recordShiftHistory({ closedBy, generalNotes, tasks }) {
     const completedCount = tasks.filter((t) => t.is_completed).length;
+    const entry = {
+      id: `hist_${Date.now()}`,
+      closed_at: new Date().toISOString(),
+      closed_by: closedBy || 'Encargado',
+      general_notes: generalNotes || '',
+      total_tasks: tasks.length,
+      completed_tasks: completedCount,
+      tasks_snapshot: tasks.map((t) => ({
+        title: t.title,
+        category: t.category,
+        is_completed: t.is_completed,
+        assigned_to: t.assigned_to,
+        notes: t.notes
+      }))
+    };
+
+    // Guardar también en historial local de respaldo
+    const localHist = this.getLocalHistory();
+    localHist.unshift(entry);
+    localStorage.setItem('lovo_local_history', JSON.stringify(localHist.slice(0, 30)));
+
     if (this.mode === 'supabase') {
       await this.supabase.from('lovo_shift_history').insert([
         {
-          closed_at: new Date().toISOString(),
-          closed_by: closedBy || 'Encargado',
-          general_notes: generalNotes || '',
-          total_tasks: tasks.length,
-          completed_tasks: completedCount,
-          tasks_snapshot: tasks
+          closed_at: entry.closed_at,
+          closed_by: entry.closed_by,
+          general_notes: entry.general_notes,
+          total_tasks: entry.total_tasks,
+          completed_tasks: entry.completed_tasks,
+          tasks_snapshot: entry.tasks_snapshot
         }
       ]);
     }
+    return entry;
   }
 
-  /**
-   * Reiniciar todas las tareas para comenzar un nuevo turno nocturno
-   */
+  async fetchShiftHistory() {
+    if (this.mode === 'supabase') {
+      const { data, error } = await this.supabase
+        .from('lovo_shift_history')
+        .select('*')
+        .order('closed_at', { ascending: false })
+        .limit(15);
+      if (!error && data && data.length > 0) {
+        return data;
+      }
+    }
+    return this.getLocalHistory();
+  }
+
   async resetShift() {
     if (this.mode === 'supabase') {
-      // Intentar usar la función RPC si fue creada, o actualización directa
       const { error: rpcErr } = await this.supabase.rpc('reset_lovo_shift');
       if (rpcErr) {
         await this.supabase.from('lovo_tasks').delete().eq('is_custom', true);
@@ -397,25 +433,57 @@ class LoVoRealtimeService {
             updated_at: new Date().toISOString()
           })
           .neq('title', '___never___');
-
-        await this.supabase
-          .from('lovo_shift_state')
-          .update({
-            general_notes: '',
-            closed_by: '',
-            is_closed: false,
-            closed_at: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', 1);
       }
+
+      // Si el encargado quitó alguna de las 20 tareas base durante el turno, restaurar las 20 tareas base
+      const { data: currentTasks } = await this.supabase.from('lovo_tasks').select('title');
+      const existingTitles = new Set((currentTasks || []).map((t) => t.title));
+      const missingBaseTasks = window.LoVoConfig.INITIAL_TASKS.filter(
+        (t) => !existingTitles.has(t.title)
+      ).map((t) => ({
+        order_index: t.order_index,
+        title: t.title,
+        category: t.category,
+        requires_note: t.requires_note,
+        is_completed: false,
+        assigned_to: '',
+        completed_by: '',
+        notes: '',
+        is_custom: false
+      }));
+
+      if (missingBaseTasks.length > 0) {
+        await this.supabase.from('lovo_tasks').insert(missingBaseTasks);
+      }
+
+      await this.supabase
+        .from('lovo_shift_state')
+        .update({
+          general_notes: '',
+          closed_by: '',
+          is_closed: false,
+          closed_at: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 1);
+
       return;
     }
 
-    // Modo Local
+    const currentShift = this.getLocalShiftState();
     localStorage.removeItem('lovo_local_tasks');
-    localStorage.removeItem('lovo_local_shift_state');
     this.ensureInitialDataLocal();
+    localStorage.setItem(
+      'lovo_local_shift_state',
+      JSON.stringify({
+        ...currentShift,
+        general_notes: '',
+        closed_by: '',
+        is_closed: false,
+        closed_at: null,
+        updated_at: new Date().toISOString()
+      })
+    );
     this.notifyLocal('SHIFT_RESET', {});
   }
 
@@ -434,6 +502,7 @@ class LoVoRealtimeService {
         assigned_to: '',
         completed_by: '',
         notes: '',
+        photo_url: '',
         requires_note: t.requires_note,
         is_custom: false,
         completed_at: null,
@@ -452,6 +521,8 @@ class LoVoRealtimeService {
           closed_by: '',
           is_closed: false,
           closed_at: null,
+          team_members: window.LoVoConfig.DEFAULT_TEAM_MEMBERS,
+          supervisor_pin: window.LoVoConfig.SUPERVISOR_PIN,
           updated_at: new Date().toISOString()
         })
       );
@@ -472,9 +543,32 @@ class LoVoRealtimeService {
 
   getLocalShiftState() {
     try {
-      return JSON.parse(localStorage.getItem('lovo_local_shift_state') || '{}');
+      const parsed = JSON.parse(localStorage.getItem('lovo_local_shift_state') || '{}');
+      return {
+        id: 1,
+        general_notes: '',
+        closed_by: '',
+        is_closed: false,
+        team_members: window.LoVoConfig.DEFAULT_TEAM_MEMBERS,
+        supervisor_pin: window.LoVoConfig.SUPERVISOR_PIN,
+        ...parsed
+      };
     } catch (_e) {
-      return { id: 1, general_notes: '', is_closed: false };
+      return {
+        id: 1,
+        general_notes: '',
+        is_closed: false,
+        team_members: window.LoVoConfig.DEFAULT_TEAM_MEMBERS,
+        supervisor_pin: window.LoVoConfig.SUPERVISOR_PIN
+      };
+    }
+  }
+
+  getLocalHistory() {
+    try {
+      return JSON.parse(localStorage.getItem('lovo_local_history') || '[]');
+    } catch (_e) {
+      return [];
     }
   }
 

@@ -5,6 +5,19 @@ window.LoVoConfig = {
   SUPABASE_URL: '',
   SUPABASE_ANON_KEY: '',
   WHATSAPP_PHONE: '34678146956',
+  SUPERVISOR_PIN: '1234',
+
+  // Plantilla inicial de empleados para selección rápida en 1 toque (Editable por el Encargado)
+  DEFAULT_TEAM_MEMBERS: [
+    'Marco',
+    'Carlos',
+    'Lucía',
+    'Javi',
+    'Sofía',
+    'Alex',
+    'Marta',
+    'Dani'
+  ],
 
   // Lista oficial de las 20 tareas iniciales de LoVo
   INITIAL_TASKS: [
@@ -31,7 +44,6 @@ window.LoVoConfig = {
   ],
 
   async load() {
-    // 1. Intentar cargar desde el endpoint del servidor en Render (/api/config)
     try {
       const response = await fetch('/api/config', { cache: 'no-store' });
       if (response.ok) {
@@ -39,12 +51,12 @@ window.LoVoConfig = {
         if (data.SUPABASE_URL) this.SUPABASE_URL = data.SUPABASE_URL.trim();
         if (data.SUPABASE_ANON_KEY) this.SUPABASE_ANON_KEY = data.SUPABASE_ANON_KEY.trim();
         if (data.WHATSAPP_PHONE) this.WHATSAPP_PHONE = data.WHATSAPP_PHONE.trim();
+        if (data.SUPERVISOR_PIN) this.SUPERVISOR_PIN = String(data.SUPERVISOR_PIN).trim();
       }
     } catch (_err) {
-      // Si se sirve como estático puro sin Node.js, continúa con localStorage
+      // Fallback local
     }
 
-    // 2. Permitir sobreescritura manual guardada en el navegador (Modal de Configuración)
     const savedUrl = localStorage.getItem('lovo_supabase_url');
     const savedKey = localStorage.getItem('lovo_supabase_anon_key');
     if (!this.SUPABASE_URL && savedUrl) this.SUPABASE_URL = savedUrl.trim();
@@ -54,6 +66,7 @@ window.LoVoConfig = {
       supabaseUrl: this.SUPABASE_URL,
       supabaseAnonKey: this.SUPABASE_ANON_KEY,
       whatsappPhone: this.WHATSAPP_PHONE,
+      supervisorPin: this.SUPERVISOR_PIN,
       isConfigured: Boolean(this.SUPABASE_URL && this.SUPABASE_ANON_KEY)
     };
   },
@@ -63,10 +76,5 @@ window.LoVoConfig = {
     localStorage.setItem('lovo_supabase_anon_key', (anonKey || '').trim());
     this.SUPABASE_URL = (url || '').trim();
     this.SUPABASE_ANON_KEY = (anonKey || '').trim();
-  },
-
-  clearManualCredentials() {
-    localStorage.removeItem('lovo_supabase_url');
-    localStorage.removeItem('lovo_supabase_anon_key');
   }
 };

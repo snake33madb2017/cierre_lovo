@@ -26,8 +26,8 @@
   <!-- Cliente Oficial de Supabase (Realtime + Postgres Changes + Presence) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché) -->
-  <link rel="stylesheet" href="/css/styles.css?v=5" />
+  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché v6) -->
+  <link rel="stylesheet" href="/css/styles.css?v=6" />
 </head>
 <body style="background-color: #081933; color: #ffffff;">
 
@@ -38,6 +38,18 @@
     <div class="bokeh b3"></div>
   </div>
 
+  <!-- Datalist global de empleados para autocompletado rápido -->
+  <datalist id="team-members-datalist"></datalist>
+
+  <!-- Input oculto para Cámara / Foto de Verificación (Punto 3) -->
+  <input
+    id="hidden-camera-input"
+    type="file"
+    accept="image/*"
+    capture="environment"
+    class="hidden"
+  />
+
   <!-- Contenedor de Notificaciones Toast -->
   <div id="toast-container" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-80 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
@@ -45,7 +57,7 @@
        PANTALLA 1: LOGIN / SELECCIÓN DE ROL (100% IDÉNTICA A INVENTARIO LOVO)
        ======================================================================== -->
   <main id="role-screen" class="min-h-dvh flex flex-col justify-center items-center px-4 py-10 relative z-10">
-    <div class="glass-login-container">
+    <div class="glass-login-container" style="width: 355px; max-width: 94vw;">
       <img
         src="/logo_lovo.png"
         alt="Logo Lovo"
@@ -53,67 +65,105 @@
       />
       <h2
         id="card-title"
-        style="font-family: 'Playfair Display', serif; color: #d3a548; font-size: 1.55rem; font-weight: 700; margin-bottom: 24px; line-height: 1.25;"
+        style="font-family: 'Playfair Display', serif; color: #d3a548; font-size: 1.55rem; font-weight: 700; margin-bottom: 18px; line-height: 1.25;"
       >
         Cierre Coctelería<br />Lovo
       </h2>
 
-      <!-- Campo 1: Nombre o ID del Empleado (Mismo estilo que DNI/NIE) -->
-      <div class="input-group">
-        <input
-          type="text"
-          id="user-name-input"
-          required
-          placeholder=" "
-          autocomplete="off"
-        />
-        <label for="user-name-input">Nombre / ID (Ej: Marco, Barra 1)</label>
+      <!-- Contenido del formulario de acceso -->
+      <div id="login-form-wrapper" style="transition: opacity 0.4s ease;">
+        <!-- Punto 5: Selección Rápida de Empleado en 1 Toque -->
+        <div class="text-left mb-3">
+          <p class="text-[11px] uppercase tracking-wider text-[#d3a548] font-bold mb-1.5">
+            ⚡ Toca tu nombre o escríbelo abajo:
+          </p>
+          <div id="quick-employee-chips" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto py-0.5"></div>
+        </div>
+
+        <!-- Campo 1: Nombre o ID del Empleado -->
+        <div class="input-group" style="margin-top: 16px;">
+          <input
+            type="text"
+            id="user-name-input"
+            required
+            placeholder=" "
+            autocomplete="off"
+          />
+          <label for="user-name-input">Nombre / ID Empleado</label>
+        </div>
+
+        <!-- Punto 1: Campo de PIN de Seguridad para Encargado (se despliega al pulsar Encargado) -->
+        <div id="supervisor-pin-group" class="input-group hidden" style="margin-top: 12px;">
+          <input
+            type="password"
+            id="supervisor-pin-input"
+            inputmode="numeric"
+            placeholder=" "
+            autocomplete="off"
+          />
+          <label for="supervisor-pin-input">🔐 PIN de Encargado (Por defecto: 1234)</label>
+        </div>
+
+        <p
+          id="role-error-msg"
+          class="hidden"
+          style="color: #ef4444; font-size: 0.85rem; margin-top: -8px; margin-bottom: 12px; font-weight: 600;"
+        >
+          Introduce tu nombre antes de entrar
+        </p>
+
+        <!-- Botón Principal: ENTRAR COMO EMPLEADO -->
+        <button
+          type="button"
+          data-select-role="empleado"
+          class="submit-btn"
+          style="background: #d3a548; border: none; border-radius: 10px; padding: 14px; color: #000; font-size: 1.02rem; font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; width: 100%; transition: transform 0.2s; margin-top: 4px;"
+        >
+          ENTRAR COMO EMPLEADO
+        </button>
+
+        <!-- Botón Secundario: ENCARGADO / VERIFICADOR (con PIN) -->
+        <button
+          type="button"
+          data-select-role="encargado"
+          class="btn-outline-gold"
+          style="border-radius: 10px; padding: 12px; font-size: 0.92rem; width: 100%; margin-top: 10px;"
+        >
+          🔐 ENTRAR COMO ENCARGADO
+        </button>
+
+        <!-- Botones Inferiores Idénticos a Inventario Coctelería Lovo -->
+        <div style="margin-top: 22px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <button
+            id="install-app-btn"
+            type="button"
+            style="width: fit-content; margin: 0 auto; font-size: 0.85rem; padding: 8px 16px; background-color: #f59e0b; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;"
+          >
+            📲 Instalar App en el Móvil
+          </button>
+          <button
+            id="btn-open-config-login"
+            type="button"
+            style="width: fit-content; margin: 0 auto; font-size: 0.75rem; padding: 5px 12px; background: transparent; color: #d3a548; border: 1px solid #d3a548; border-radius: 8px; cursor: pointer;"
+          >
+            Configurar Conexión Supabase
+          </button>
+        </div>
       </div>
 
-      <p
-        id="role-error-msg"
+      <!-- Punto 6: Animación "CHEERS!" idéntica a Inventario Coctelería Lovo al autenticarse -->
+      <div
+        id="login-cheers-box"
         class="hidden"
-        style="color: #ef4444; font-size: 0.85rem; margin-top: -10px; margin-bottom: 14px; font-weight: 600;"
+        style="padding: 30px 10px; text-align: center;"
       >
-        Introduce tu nombre antes de entrar
-      </p>
-
-      <!-- Botón Principal: ENTRAR COMO EMPLEADO (Idéntico al botón BIENVENIDO) -->
-      <button
-        type="button"
-        data-select-role="empleado"
-        class="submit-btn"
-        style="background: #d3a548; border: none; border-radius: 10px; padding: 14px; color: #000; font-size: 1.02rem; font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; width: 100%; transition: transform 0.2s; margin-top: 4px;"
-      >
-        ENTRAR COMO EMPLEADO
-      </button>
-
-      <!-- Botón Secundario: ENCARGADO / VERIFICADOR -->
-      <button
-        type="button"
-        data-select-role="encargado"
-        class="btn-outline-gold"
-        style="border-radius: 10px; padding: 12px; font-size: 0.92rem; width: 100%; margin-top: 10px;"
-      >
-        🛡️ ENTRAR COMO ENCARGADO
-      </button>
-
-      <!-- Botones Inferiores Idénticos a Inventario Coctelería Lovo -->
-      <div style="margin-top: 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
-        <button
-          id="install-app-btn"
-          type="button"
-          style="width: fit-content; margin: 0 auto; font-size: 0.85rem; padding: 8px 16px; background-color: #f59e0b; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;"
-        >
-          📲 Instalar App en el Móvil
-        </button>
-        <button
-          id="btn-open-config-login"
-          type="button"
-          style="width: fit-content; margin: 0 auto; font-size: 0.75rem; padding: 5px 12px; background: transparent; color: #d3a548; border: 1px solid #d3a548; border-radius: 8px; cursor: pointer;"
-        >
-          Configurar Conexión Supabase
-        </button>
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #d3a548; margin: 0 0 10px 0; font-weight: 800;">
+          CHEERS! 🍸
+        </h3>
+        <p style="font-size: 1.05rem; color: #ffffff; font-family: 'Inter', sans-serif; margin: 6px 0;">
+          Bienvenido/a, <span id="cheers-user-name" style="color: #d3a548; font-weight: 700;"></span>
+        </p>
+        <p id="cheers-user-role" style="font-size: 0.85rem; color: rgba(255,255,255,0.7); font-family: 'Inter', sans-serif; margin-top: 4px;"></p>
       </div>
     </div>
 
@@ -147,7 +197,7 @@
               <span>👤 <strong id="header-user-name" class="text-white"></strong></span>
               <span>•</span>
               <button id="btn-switch-role" type="button" class="text-[#d3a548] hover:underline font-semibold">
-                Cambiar rol
+                Cambiar usuario/rol
               </button>
             </div>
           </div>
@@ -223,23 +273,27 @@
         </div>
 
         <!-- Mini contadores -->
-        <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-[#d3a548]/25 text-center">
+        <div class="grid grid-cols-4 gap-2 mt-3.5 pt-3 border-t border-[#d3a548]/25 text-center">
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-completed" class="block text-base font-extrabold text-[#10b981]">0</span>
-            <span class="text-[11px] text-white/70">Completadas</span>
+            <span class="text-[10px] text-white/70">Completadas</span>
           </div>
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-pending" class="block text-base font-extrabold text-[#d3a548]">20</span>
-            <span class="text-[11px] text-white/70">Pendientes</span>
+            <span class="text-[10px] text-white/70">Pendientes</span>
           </div>
           <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
             <span id="stat-unassigned" class="block text-base font-extrabold text-white">20</span>
-            <span class="text-[11px] text-white/70">Sin asignar</span>
+            <span class="text-[10px] text-white/70">Sin asignar</span>
+          </div>
+          <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
+            <span id="stat-photos" class="block text-base font-extrabold text-[#f0ca75]">0</span>
+            <span class="text-[10px] text-white/70">📷 Fotos</span>
           </div>
         </div>
       </section>
 
-      <!-- Barra de Filtros, Categorías y Añadir Tarea Imprevista -->
+      <!-- Barra de Filtros, Categorías y Añadir Tarea (Botón Añadir SOLO visible para Encargado) -->
       <section class="space-y-3">
         <!-- Pestañas de Estado -->
         <div class="lovo-glass p-1 rounded-xl flex items-center gap-1">
@@ -257,7 +311,7 @@
           </button>
         </div>
 
-        <!-- Buscador + Botón Añadir Tarea Imprevista de Madrugada -->
+        <!-- Buscador + Botón Agregar Tarea (SOLO ENCARGADO) -->
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-[#d3a548]">
@@ -273,22 +327,23 @@
             />
           </div>
 
+          <!-- Exclusivo Encargado: Agregar Tarea -->
           <button
             id="btn-toggle-add-task"
             type="button"
-            class="btn-gold px-3.5 py-2.5 text-xs flex items-center gap-1.5 shrink-0"
+            class="hidden btn-gold px-3.5 py-2.5 text-xs items-center gap-1.5 shrink-0"
           >
             <svg class="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
             </svg>
-            <span>Tarea Imprevista</span>
+            <span>Agregar Tarea</span>
           </button>
         </div>
 
-        <!-- Cajón Desplegable para Añadir Tarea Personalizada de Última Hora -->
+        <!-- Cajón Desplegable para Agregar Tarea (Exclusivo Encargado) -->
         <div id="add-task-drawer" class="hidden lovo-glass-gold rounded-2xl p-4">
           <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5">
-            ➕ Añadir Tarea Imprevista de Madrugada
+            ➕ Agregar Nueva Tarea al Cierre (Exclusivo Encargado)
           </h3>
           <form id="custom-task-form" class="space-y-2.5">
             <div>
@@ -296,7 +351,7 @@
                 id="custom-task-title"
                 type="text"
                 required
-                placeholder="Descripción de la tarea imprevista (ej. Limpiar derrame almacén)"
+                placeholder="Nombre de la tarea (ej. Limpiar derrame almacén, Revisar terraza...)"
                 class="lovo-input w-full px-3 py-2 text-xs"
               />
             </div>
@@ -315,7 +370,8 @@
               <input
                 id="custom-task-assignee"
                 type="text"
-                placeholder="Responsable asignado..."
+                list="team-members-datalist"
+                placeholder="Asignar responsable (opcional)..."
                 class="lovo-input w-full px-3 py-2 text-xs"
               />
             </div>
@@ -323,7 +379,7 @@
               <input
                 id="custom-task-notes"
                 type="text"
-                placeholder="Nota adicional o incidencia (opcional)..."
+                placeholder="Nota adicional o instrucción..."
                 class="lovo-input w-full px-3 py-2 text-xs"
               />
             </div>
@@ -332,7 +388,7 @@
                 type="submit"
                 class="btn-gold px-4 py-2 text-xs font-bold"
               >
-                Guardar y Sincronizar con el Equipo
+                Agregar y Sincronizar con el Equipo
               </button>
             </div>
           </form>
@@ -343,14 +399,14 @@
       </section>
 
       <!-- ====================================================================
-           LISTA DE LAS 20 TAREAS DE CIERRE DE LOVO (+ PERSONALIZADAS)
+           LISTA DE TAREAS DE CIERRE DE LOVO
            ==================================================================== -->
       <section aria-label="Checklist de tareas de cierre">
         <div id="tasks-container" class="space-y-3"></div>
       </section>
 
       <!-- ====================================================================
-           PANEL EXCLUSIVO DEL ENCARGADO / VERIFICADOR (REPORTE FINAL Y WHATSAPP)
+           PANEL EXCLUSIVO DEL ENCARGADO / VERIFICADOR
            ==================================================================== -->
       <section id="supervisor-section" class="hidden pt-4 space-y-4">
         <div class="lovo-glass-gold rounded-3xl p-5 sm:p-6 space-y-5">
@@ -364,7 +420,7 @@
                 Supervisión Global y Cierre Oficial
               </h2>
               <p class="text-xs text-white/75 mt-0.5">
-                Verifica los responsables, añade observaciones de cierre y envía el parte oficial por WhatsApp.
+                Solo tú puedes agregar o quitar tareas, gestionar la plantilla y enviar el parte oficial.
               </p>
             </div>
           </div>
@@ -375,6 +431,51 @@
               👥 Rendimiento y Tareas por Responsable
             </h3>
             <div id="team-breakdown-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+          </div>
+
+          <!-- Punto 5: Gestión de Empleados Habituales y PIN de Encargado -->
+          <div class="p-4 rounded-2xl bg-black/25 border border-[#d3a548]/25 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548]">
+                ⚡ Plantilla Rápida de Empleados (Selector de Inicio)
+              </h3>
+              <span class="text-[11px] text-white/60">Toca ✕ para quitar un nombre</span>
+            </div>
+
+            <div id="supervisor-team-chips" class="flex flex-wrap gap-1.5"></div>
+
+            <form id="add-team-member-form" class="flex items-center gap-2 pt-1">
+              <input
+                id="new-team-member-input"
+                type="text"
+                placeholder="Añadir empleado a la lista rápida (ej. Elena)..."
+                class="lovo-input flex-1 px-3 py-1.5 text-xs"
+              />
+              <button type="submit" class="btn-gold px-3.5 py-1.5 text-xs font-bold shrink-0">
+                + Añadir Empleado
+              </button>
+            </form>
+
+            <!-- Cambiar PIN del Encargado -->
+            <div class="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs text-white/80 font-medium">🔐 PIN de Acceso Encargado:</span>
+              <div class="flex items-center gap-2">
+                <input
+                  id="change-supervisor-pin-input"
+                  type="text"
+                  maxlength="8"
+                  placeholder="1234"
+                  class="lovo-input w-24 px-2.5 py-1 text-xs text-center font-mono"
+                />
+                <button
+                  id="btn-save-supervisor-pin"
+                  type="button"
+                  class="btn-outline-gold px-3 py-1 text-xs"
+                >
+                  Guardar PIN
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- 2. Registro de Fecha y Hora Exacta del Cierre -->
@@ -454,9 +555,17 @@
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                <span>Reiniciar checklist para una nueva noche</span>
+                <span>Reiniciar checklist (Restaurar las 20 tareas para nueva noche)</span>
               </button>
             </div>
+          </div>
+
+          <!-- Punto 6: Historial de Cierres Anteriores -->
+          <div class="pt-4 border-t border-[#d3a548]/30">
+            <h3 class="font-serif-lovo text-base font-bold text-[#d3a548] mb-2.5">
+              📜 Historial de Cierres Anteriores
+            </h3>
+            <div id="shift-history-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
           </div>
         </div>
       </section>
@@ -464,6 +573,65 @@
       <footer class="pt-6 pb-4 text-center text-white/45 text-xs">
         Coctelería LoVo • Desarrollado por @MDev - Marco Daza 2026
       </footer>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL VISOR DE FOTO DE VERIFICACIÓN (PUNTO 3)
+       ======================================================================== -->
+  <div id="photo-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md lovo-glass-gold rounded-3xl p-5 text-center relative">
+      <button
+        id="btn-close-photo-modal"
+        type="button"
+        class="absolute top-4 right-4 text-white/70 hover:text-white p-1 text-lg"
+      >
+        ✕
+      </button>
+      <p class="text-[11px] uppercase tracking-widest text-[#d3a548] font-bold">Evidencia Fotográfica</p>
+      <h3 id="photo-modal-title" class="font-serif-lovo text-xl font-bold text-white mt-1 mb-3">Tarea</h3>
+      <div class="rounded-2xl overflow-hidden border border-[#d3a548]/40 bg-black/50 max-h-[65vh] flex items-center justify-center">
+        <img id="photo-modal-img" src="" alt="Foto de verificación" class="max-h-[65vh] w-auto object-contain" />
+      </div>
+      <div class="flex items-center justify-between gap-2 mt-4">
+        <button
+          id="btn-delete-photo"
+          type="button"
+          class="text-xs text-[#ef4444] border border-[#ef4444]/60 hover:bg-[#ef4444]/15 px-3 py-2 rounded-xl font-semibold"
+        >
+          🗑️ Borrar Foto
+        </button>
+        <button
+          id="btn-close-photo-modal-bottom"
+          type="button"
+          class="btn-gold px-5 py-2 text-xs font-bold"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL CELEBRACIÓN "¡CHEERS! CIERRE 100% COMPLETADO" (PUNTO 6)
+       ======================================================================== -->
+  <div id="cheers-100-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm lovo-glass-gold rounded-3xl p-7 text-center relative">
+      <img src="/logo_lovo.png" alt="LoVo" class="w-20 h-20 mx-auto mb-3 object-contain" />
+      <h3 class="font-serif-lovo text-3xl font-extrabold text-[#d3a548]">¡CHEERS! 🍾</h3>
+      <p class="text-sm font-bold text-white mt-2">
+        ¡100% de las tareas del cierre nocturno completadas!
+      </p>
+      <p class="text-xs text-white/70 mt-1 mb-5">
+        El Encargado ya puede revisar el panel final y enviar el reporte oficial por WhatsApp.
+      </p>
+      <button
+        id="btn-close-cheers-100"
+        type="button"
+        class="submit-btn w-full py-3 text-sm font-extrabold"
+      >
+        ¡GENIAL!
+      </button>
     </div>
   </div>
 
@@ -539,9 +707,9 @@
     </div>
   </div>
 
-  <!-- Scripts de la Aplicación (con versión anti-caché) -->
-  <script src="/js/config.js?v=5"></script>
-  <script src="/js/supabase-client.js?v=5"></script>
-  <script src="/js/app.js?v=5"></script>
+  <!-- Scripts de la Aplicación (con versión anti-caché v6) -->
+  <script src="/js/config.js?v=6"></script>
+  <script src="/js/supabase-client.js?v=6"></script>
+  <script src="/js/app.js?v=6"></script>
 </body>
 </html>
