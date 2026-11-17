@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS public.lovo_tasks (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Asegurar columna photo_url si la tabla ya existía antes
 ALTER TABLE public.lovo_tasks ADD COLUMN IF NOT EXISTS photo_url TEXT NOT NULL DEFAULT '';
 
 -- 2. TABLA DE ESTADO GLOBAL DEL TURNO ACTUAL (lovo_shift_state)
@@ -38,17 +37,23 @@ CREATE TABLE IF NOT EXISTS public.lovo_shift_state (
     closed_by TEXT NOT NULL DEFAULT '',
     is_closed BOOLEAN NOT NULL DEFAULT FALSE,
     closed_at TIMESTAMPTZ,
-    team_members JSONB NOT NULL DEFAULT '["Marco", "Carlos", "Lucía", "Javi", "Sofía", "Alex", "Marta", "Dani"]'::jsonb,
-    supervisor_pin TEXT NOT NULL DEFAULT '1234',
+    team_members JSONB NOT NULL DEFAULT '["Sergio", "Sara", "Marco", "Gia", "Fede", "JC", "Bruno", "Renato", "Cristian", "Jef", "Bella", "Angelo", "Miguel"]'::jsonb,
+    supervisor_pin TEXT NOT NULL DEFAULT 'Lovito2027*',
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Asegurar columnas nuevas si la tabla ya existía antes
 ALTER TABLE public.lovo_shift_state
-ADD COLUMN IF NOT EXISTS team_members JSONB NOT NULL DEFAULT '["Marco", "Carlos", "Lucía", "Javi", "Sofía", "Alex", "Marta", "Dani"]'::jsonb;
+ADD COLUMN IF NOT EXISTS team_members JSONB NOT NULL DEFAULT '["Sergio", "Sara", "Marco", "Gia", "Fede", "JC", "Bruno", "Renato", "Cristian", "Jef", "Bella", "Angelo", "Miguel"]'::jsonb;
 
 ALTER TABLE public.lovo_shift_state
-ADD COLUMN IF NOT EXISTS supervisor_pin TEXT NOT NULL DEFAULT '1234';
+ADD COLUMN IF NOT EXISTS supervisor_pin TEXT NOT NULL DEFAULT 'Lovito2027*';
+
+-- Actualizar la plantilla oficial y contraseña de encargados (Sergio y Sara)
+UPDATE public.lovo_shift_state
+SET
+    team_members = '["Sergio", "Sara", "Marco", "Gia", "Fede", "JC", "Bruno", "Renato", "Cristian", "Jef", "Bella", "Angelo", "Miguel"]'::jsonb,
+    supervisor_pin = 'Lovito2027*'
+WHERE id = 1;
 
 -- 3. TABLA DE HISTÓRICO DE CIERRES (lovo_shift_history)
 CREATE TABLE IF NOT EXISTS public.lovo_shift_history (
@@ -141,9 +146,18 @@ END $$;
 -- ============================================================================
 -- DATOS INICIALES: LAS 20 TAREAS OFICIALES DE CIERRE DE "LoVo"
 -- ============================================================================
-INSERT INTO public.lovo_shift_state (id, shift_date, general_notes, is_closed)
-VALUES (1, CURRENT_DATE, '', FALSE)
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.lovo_shift_state (id, shift_date, general_notes, is_closed, team_members, supervisor_pin)
+VALUES (
+    1,
+    CURRENT_DATE,
+    '',
+    FALSE,
+    '["Sergio", "Sara", "Marco", "Gia", "Fede", "JC", "Bruno", "Renato", "Cristian", "Jef", "Bella", "Angelo", "Miguel"]'::jsonb,
+    'Lovito2027*'
+)
+ON CONFLICT (id) DO UPDATE SET
+    team_members = EXCLUDED.team_members,
+    supervisor_pin = EXCLUDED.supervisor_pin;
 
 DO $$
 BEGIN

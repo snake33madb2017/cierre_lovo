@@ -26,8 +26,8 @@
   <!-- Cliente Oficial de Supabase (Realtime + Postgres Changes + Presence) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché v7) -->
-  <link rel="stylesheet" href="/css/styles.css?v=7" />
+  <!-- Hoja de Estilos Oficial LoVo (con versión anti-caché v8) -->
+  <link rel="stylesheet" href="/css/styles.css?v=8" />
 </head>
 <body style="background-color: #081933; color: #ffffff;">
 
@@ -78,9 +78,9 @@
             <svg class="w-3.5 h-3.5 text-[#d3a548] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
-            <span>Selecciona tu perfil o escríbelo:</span>
+            <span>Selecciona tu nombre:</span>
           </p>
-          <div id="quick-employee-chips" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto py-0.5"></div>
+          <div id="quick-employee-chips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto py-0.5"></div>
         </div>
 
         <!-- Campo 1: Nombre o ID del Empleado -->
@@ -92,19 +92,18 @@
             placeholder=" "
             autocomplete="off"
           />
-          <label for="user-name-input">Nombre / ID Empleado</label>
+          <label for="user-name-input">Usuario del Equipo LoVo</label>
         </div>
 
-        <!-- Campo de PIN de Seguridad para Encargado -->
+        <!-- Campo de Contraseña de Seguridad para Encargados (Sergio / Sara) -->
         <div id="supervisor-pin-group" class="input-group hidden" style="margin-top: 12px;">
           <input
             type="password"
             id="supervisor-pin-input"
-            inputmode="numeric"
             placeholder=" "
             autocomplete="off"
           />
-          <label for="supervisor-pin-input">PIN de Encargado (Por defecto: 1234)</label>
+          <label for="supervisor-pin-input">Contraseña de Encargado</label>
         </div>
 
         <p
@@ -497,28 +496,28 @@
               </button>
             </form>
 
-            <!-- Cambiar PIN del Encargado -->
+            <!-- Cambiar Contraseña del Encargado -->
             <div class="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
               <span class="text-xs text-white/80 font-medium inline-flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
-                <span>PIN de Acceso Encargado:</span>
+                <span>Contraseña Encargado (Sergio / Sara):</span>
               </span>
               <div class="flex items-center gap-2">
                 <input
                   id="change-supervisor-pin-input"
-                  type="text"
-                  maxlength="8"
-                  placeholder="1234"
-                  class="lovo-input w-24 px-2.5 py-1 text-xs text-center font-mono"
+                  type="password"
+                  maxlength="32"
+                  placeholder="Lovito2027*"
+                  class="lovo-input w-32 px-2.5 py-1 text-xs text-center font-mono"
                 />
                 <button
                   id="btn-save-supervisor-pin"
                   type="button"
                   class="btn-outline-gold px-3 py-1 text-xs"
                 >
-                  Guardar PIN
+                  Actualizar
                 </button>
               </div>
             </div>
@@ -768,9 +767,9 @@
     </div>
   </div>
 
-  <!-- Scripts de la Aplicación (con versión anti-caché v7) -->
-  <script src="/js/config.js?v=7"></script>
-  <script src="/js/supabase-client.js?v=7"></script>
-  <script src="/js/app.js?v=7"></script>
+  <!-- Scripts de la Aplicación (con versión anti-caché v8) -->
+  <script src="/js/config.js?v=8"></script>
+  <script src="/js/supabase-client.js?v=8"></script>
+  <script src="/js/app.js?v=8"></script>
 </body>
 </html>

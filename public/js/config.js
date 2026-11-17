@@ -5,18 +5,28 @@ window.LoVoConfig = {
   SUPABASE_URL: '',
   SUPABASE_ANON_KEY: '',
   WHATSAPP_PHONE: '34678146956',
-  SUPERVISOR_PIN: '1234',
 
-  // Plantilla inicial de empleados para selección rápida en 1 toque (Editable por el Encargado)
+  // Contraseña oficial de Encargado
+  SUPERVISOR_PIN: 'Lovito2027*',
+
+  // Únicos usuarios autorizados como Encargado / Verificador
+  AUTHORIZED_SUPERVISORS: ['Sergio', 'Sara'],
+
+  // Plantilla oficial real de Coctelería LoVo (13 miembros)
   DEFAULT_TEAM_MEMBERS: [
+    'Sergio',
+    'Sara',
     'Marco',
-    'Carlos',
-    'Lucía',
-    'Javi',
-    'Sofía',
-    'Alex',
-    'Marta',
-    'Dani'
+    'Gia',
+    'Fede',
+    'JC',
+    'Bruno',
+    'Renato',
+    'Cristian',
+    'Jef',
+    'Bella',
+    'Angelo',
+    'Miguel'
   ],
 
   // Lista oficial de las 20 tareas iniciales de LoVo

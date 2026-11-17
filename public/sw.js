@@ -1,11 +1,11 @@
-const CACHE_NAME = 'lovo-cierre-pwa-v7';
+const CACHE_NAME = 'lovo-cierre-pwa-v8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/css/styles.css?v=7',
-  '/js/config.js?v=7',
-  '/js/supabase-client.js?v=7',
-  '/js/app.js?v=7',
+  '/css/styles.css?v=8',
+  '/js/config.js?v=8',
+  '/js/supabase-client.js?v=8',
+  '/js/app.js?v=8',
   '/manifest.json',
   '/logo_lovo.png'
 ];

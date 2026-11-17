@@ -169,17 +169,31 @@
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/sw.js?v=7')
+        .register('/sw.js?v=8')
         .then((reg) => reg.update())
         .catch((err) => console.warn('Service Worker opcional no registrado:', err));
     }
+  }
+
+  function isAuthorizedSupervisorName(name) {
+    const clean = String(name || '').trim().toLowerCase();
+    const allowed = (window.LoVoConfig.AUTHORIZED_SUPERVISORS || ['Sergio', 'Sara']).map((n) =>
+      n.toLowerCase()
+    );
+    return allowed.includes(clean);
   }
 
   function loadSavedUserSession() {
     const savedId =
       localStorage.getItem('lovo_user_id') || `emp_${Math.random().toString(36).slice(2, 9)}`;
     const savedName = localStorage.getItem('lovo_user_name') || '';
-    const savedRole = localStorage.getItem('lovo_user_role') || '';
+    let savedRole = localStorage.getItem('lovo_user_role') || '';
+
+    // Si tenía guardado rol encargado pero no es Sergio ni Sara, pasar a empleado
+    if (savedRole === 'encargado' && !isAuthorizedSupervisorName(savedName)) {
+      savedRole = 'empleado';
+      localStorage.setItem('lovo_user_role', 'empleado');
+    }
 
     localStorage.setItem('lovo_user_id', savedId);
     state.user = {
@@ -195,7 +209,7 @@
 
   function saveUserSession(name, role) {
     state.user.name = name.trim();
-    state.user.role = role;
+    state.user.role = role === 'encargado' && isAuthorizedSupervisorName(name) ? 'encargado' : 'empleado';
     localStorage.setItem('lovo_user_name', state.user.name);
     localStorage.setItem('lovo_user_role', state.user.role);
     window.lovoRealtime.updatePresence(state.user);
@@ -203,14 +217,16 @@
 
   function getTeamMembers() {
     const list = state.shiftState?.team_members;
-    if (Array.isArray(list) && list.length > 0) {
+    if (Array.isArray(list) && list.length > 0 && !list.includes('Carlos')) {
       return list;
     }
     const localSaved = localStorage.getItem('lovo_team_members');
     if (localSaved) {
       try {
         const parsed = JSON.parse(localSaved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0 && !parsed.includes('Carlos')) {
+          return parsed;
+        }
       } catch (_e) {}
     }
     return window.LoVoConfig.DEFAULT_TEAM_MEMBERS || [];
@@ -219,7 +235,11 @@
   function getActiveSupervisorPin() {
     const fromShift = state.shiftState?.supervisor_pin;
     const fromLocal = localStorage.getItem('lovo_supervisor_pin');
-    return String(fromShift || fromLocal || window.LoVoConfig.SUPERVISOR_PIN || '1234').trim();
+    const candidate = String(fromShift || fromLocal || '').trim();
+    if (!candidate || candidate === '1234') {
+      return window.LoVoConfig.SUPERVISOR_PIN || 'Lovito2027*';
+    }
+    return candidate;
   }
 
   async function refreshAllData() {
@@ -241,6 +261,24 @@
       state.tasks = sortTasks(enrichedTasks);
       state.shiftState = { ...state.shiftState, ...(shiftState || {}) };
       state.history = history || [];
+
+      // Si en la BD o en local aún estaba la lista demo antigua ('Carlos') o el PIN '1234', actualizar a los 13 usuarios reales y Lovito2027*
+      if (
+        !Array.isArray(state.shiftState.team_members) ||
+        state.shiftState.team_members.includes('Carlos') ||
+        state.shiftState.supervisor_pin === '1234'
+      ) {
+        state.shiftState.team_members = [...window.LoVoConfig.DEFAULT_TEAM_MEMBERS];
+        state.shiftState.supervisor_pin = window.LoVoConfig.SUPERVISOR_PIN || 'Lovito2027*';
+        localStorage.setItem('lovo_team_members', JSON.stringify(state.shiftState.team_members));
+        localStorage.setItem('lovo_supervisor_pin', state.shiftState.supervisor_pin);
+        window.lovoRealtime
+          .updateShiftState({
+            team_members: state.shiftState.team_members,
+            supervisor_pin: state.shiftState.supervisor_pin
+          })
+          .catch(() => {});
+      }
 
       state.tasks.forEach((t) => {
         if (t.requires_note || (t.notes && t.notes.trim().length > 0)) {
@@ -270,27 +308,41 @@
   // =========================================================================
   function renderQuickEmployeeSelectors() {
     const members = getTeamMembers();
-    const currentName = (dom.userNameInput?.value || state.user.name || '').trim().toLowerCase();
+    const currentName = (dom.userNameInput?.value || state.user.name || '').trim();
+    const currentLower = currentName.toLowerCase();
 
     if (dom.quickEmployeeChips) {
       dom.quickEmployeeChips.innerHTML = members
         .map((name) => {
-          const isSelected = currentName === name.toLowerCase();
+          const isSelected = currentLower === name.toLowerCase();
+          const isBoss = isAuthorizedSupervisorName(name);
           return `
             <button
               type="button"
               data-quick-name="${escapeHtml(name)}"
-              class="px-2.5 py-1 rounded-full text-xs font-bold transition ${
+              class="px-2.5 py-1 rounded-full text-xs font-bold transition inline-flex items-center gap-1 ${
                 isSelected
                   ? 'bg-[#d3a548] text-[#081933] shadow'
                   : 'bg-black/35 text-white/85 border border-[#d3a548]/35 hover:border-[#d3a548]'
               }"
             >
-              ${escapeHtml(name)}
+              ${isBoss ? '<span class="text-[10px]">◆</span>' : ''}
+              <span>${escapeHtml(name)}</span>
             </button>
           `;
         })
         .join('');
+    }
+
+    // Mostrar/ocultar el botón de Encargado según si el usuario es Sergio o Sara
+    const btnEncargado = document.querySelector('[data-select-role="encargado"]');
+    if (btnEncargado) {
+      if (!currentName || isAuthorizedSupervisorName(currentName)) {
+        btnEncargado.classList.remove('hidden');
+      } else {
+        btnEncargado.classList.add('hidden');
+        if (dom.supervisorPinGroup) dom.supervisorPinGroup.classList.add('hidden');
+      }
     }
 
     if (dom.teamMembersDatalist) {
@@ -1065,6 +1117,16 @@
         const name = chip.getAttribute('data-quick-name');
         dom.userNameInput.value = name;
         dom.roleErrorMsg.classList.add('hidden');
+        if (!isAuthorizedSupervisorName(name) && dom.supervisorPinGroup) {
+          dom.supervisorPinGroup.classList.add('hidden');
+          dom.supervisorPinInput.value = '';
+        }
+        renderQuickEmployeeSelectors();
+      });
+    }
+
+    if (dom.userNameInput) {
+      dom.userNameInput.addEventListener('input', () => {
         renderQuickEmployeeSelectors();
       });
     }
@@ -1082,10 +1144,17 @@
         }
 
         if (role === 'encargado') {
+          if (!isAuthorizedSupervisorName(name)) {
+            dom.roleErrorMsg.textContent =
+              'Acceso restringido: Solo Sergio y Sara son encargados autorizados';
+            dom.roleErrorMsg.classList.remove('hidden');
+            return;
+          }
+
           if (dom.supervisorPinGroup.classList.contains('hidden')) {
             dom.supervisorPinGroup.classList.remove('hidden');
             dom.roleErrorMsg.textContent =
-              'Introduce el PIN de Encargado y vuelve a pulsar "ENTRAR COMO ENCARGADO"';
+              'Introduce tu contraseña de Encargado y vuelve a pulsar "ENTRAR COMO ENCARGADO"';
             dom.roleErrorMsg.classList.remove('hidden');
             dom.supervisorPinInput.focus();
             return;
@@ -1094,7 +1163,7 @@
           const enteredPin = (dom.supervisorPinInput.value || '').trim();
           const validPin = getActiveSupervisorPin();
           if (enteredPin !== validPin) {
-            dom.roleErrorMsg.textContent = 'PIN de Encargado incorrecto';
+            dom.roleErrorMsg.textContent = 'Contraseña de Encargado incorrecta';
             dom.roleErrorMsg.classList.remove('hidden');
             dom.supervisorPinInput.focus();
             return;
