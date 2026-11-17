@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lovo-cierre-pwa-v1';
+const CACHE_NAME = 'lovo-cierre-pwa-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -7,8 +7,7 @@ const STATIC_ASSETS = [
   '/js/supabase-client.js',
   '/js/app.js',
   '/manifest.json',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg'
+  '/logo_lovo.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,7 +37,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Nunca cachear llamadas a la API ni a Supabase
   if (
     url.pathname.startsWith('/api/') ||
     url.hostname.includes('supabase.co') ||
@@ -47,7 +45,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Estrategia Network-First con fallback a caché para tener siempre la última versión
   event.respondWith(
     fetch(event.request)
       .then((response) => {

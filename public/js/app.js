@@ -1,5 +1,6 @@
 /**
  * Lógica Principal de la PWA "LoVo" — Cierre de Turno Nocturno
+ * Estética Oficial Coctelería LoVo (Navy Blue #081933 + Gold #d3a548)
  */
 (function () {
   const state = {
@@ -27,7 +28,6 @@
     }
   };
 
-  // Referencias DOM
   const dom = {};
 
   function cacheDom() {
@@ -110,7 +110,6 @@
     loadSavedUserSession();
     bindGlobalEvents();
 
-    // Configurar callbacks de Supabase Realtime
     window.lovoRealtime.on('onTaskRealtimeEvent', handleRealtimeTaskEvent);
     window.lovoRealtime.on('onTasksChanged', refreshAllData);
     window.lovoRealtime.on('onShiftStateChanged', handleRealtimeShiftState);
@@ -120,7 +119,6 @@
     await window.lovoRealtime.init(state.user);
     await refreshAllData();
 
-    // Si ya tenía sesión guardada, entrar directo a la pantalla principal
     if (state.user.name && state.user.role) {
       enterMainApp();
     }
@@ -169,7 +167,6 @@
       state.tasks = sortTasks(tasks);
       state.shiftState = shiftState || state.shiftState;
 
-      // Abrir automáticamente las notas que son requeridas o ya tienen texto
       state.tasks.forEach((t) => {
         if (t.requires_note || (t.notes && t.notes.trim().length > 0)) {
           state.openNoteTaskIds.add(t.id);
@@ -223,7 +220,6 @@
         state.openNoteTaskIds.add(newRow.id);
       }
 
-      // Si el usuario tiene el cursor activo dentro de un input de esta tarea, actualizamos sin perder su foco
       const activeEl = document.activeElement;
       const isEditingThisTask =
         activeEl &&
@@ -294,14 +290,14 @@
         .map((u) => {
           const isBoss = u.role === 'encargado';
           return `
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
               isBoss
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'bg-zinc-800/90 text-zinc-300 border border-zinc-700'
+                ? 'bg-[#d3a548]/20 text-[#d3a548] border border-[#d3a548]/50'
+                : 'bg-black/30 text-white/90 border border-white/15'
             }">
-              <span class="w-1.5 h-1.5 rounded-full ${isBoss ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+              <span class="w-2 h-2 rounded-full ${isBoss ? 'bg-[#d3a548]' : 'bg-[#10b981]'}"></span>
               ${escapeHtml(u.name || 'Compañero')}
-              ${isBoss ? '<span class="text-[10px] uppercase tracking-wider text-amber-400 font-bold">(Encargado)</span>' : ''}
+              ${isBoss ? '<span class="text-[10px] uppercase tracking-wider text-[#d3a548] font-extrabold">(Encargado)</span>' : ''}
             </span>
           `;
         })
@@ -315,14 +311,11 @@
 
     dom.connectionText.textContent = status.message;
     if (status.mode === 'supabase') {
-      dom.connectionBadge.className =
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      dom.connectionBadge.className = 'status-indicator text-[#10b981] border-[#10b981]/40';
     } else if (status.mode === 'local') {
-      dom.connectionBadge.className =
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30 cursor-pointer';
+      dom.connectionBadge.className = 'status-indicator text-[#d3a548] border-[#d3a548]/45 cursor-pointer';
     } else {
-      dom.connectionBadge.className =
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/15 text-red-300 border border-red-500/30 cursor-pointer';
+      dom.connectionBadge.className = 'status-indicator text-[#ef4444] border-[#ef4444]/45 cursor-pointer';
     }
   }
 
@@ -338,8 +331,8 @@
 
     dom.headerUserRoleBadge.textContent = isEncargado ? 'Encargado / Verificador' : 'Empleado';
     dom.headerUserRoleBadge.className = isEncargado
-      ? 'px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40'
-      : 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-zinc-800 text-zinc-300 border border-zinc-700';
+      ? 'px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#d3a548] text-[#081933]'
+      : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/35 text-[#d3a548] border border-[#d3a548]/40';
 
     if (isEncargado) {
       dom.supervisorSection.classList.remove('hidden');
@@ -394,11 +387,7 @@
           <button
             type="button"
             data-category-pill="${escapeHtml(cat)}"
-            class="whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
-              active
-                ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20'
-                : 'bg-zinc-900/90 text-zinc-400 border border-zinc-800 hover:border-amber-500/40 hover:text-zinc-200'
-            }"
+            class="category-pill ${active ? 'active' : ''}"
           >
             ${escapeHtml(label)}
           </button>
@@ -409,7 +398,6 @@
 
   function getFilteredTasks() {
     return state.tasks.filter((task) => {
-      // Filtro por estado
       if (state.filterStatus === 'pending' && task.is_completed) return false;
       if (state.filterStatus === 'completed' && !task.is_completed) return false;
       if (state.filterStatus === 'mine') {
@@ -418,12 +406,10 @@
         if (!myName || !assigned.includes(myName)) return false;
       }
 
-      // Filtro por categoría
       if (state.filterCategory !== 'all' && task.category !== state.filterCategory) {
         return false;
       }
 
-      // Búsqueda por texto o responsable
       if (state.searchQuery.trim()) {
         const q = state.searchQuery.toLowerCase().trim();
         const matchTitle = (task.title || '').toLowerCase().includes(q);
@@ -443,7 +429,7 @@
     if (filtered.length === 0) {
       dom.tasksContainer.innerHTML = `
         <div class="lovo-glass rounded-2xl p-8 text-center">
-          <p class="text-zinc-400 text-sm">No hay tareas que coincidan con este filtro.</p>
+          <p class="text-white/70 text-sm">No hay tareas que coincidan con este filtro.</p>
         </div>
       `;
       return;
@@ -473,7 +459,7 @@
           <article
             data-task-card="${task.id}"
             class="lovo-glass rounded-2xl p-4 transition-all duration-200 ${
-              isCompleted ? 'task-card-completed' : 'hover:border-amber-500/35'
+              isCompleted ? 'task-card-completed' : 'hover:border-[#d3a548]'
             }"
           >
             <!-- Fila Superior: Checkbox + Título + Categoría -->
@@ -487,7 +473,7 @@
               >
                 ${
                   isCompleted
-                    ? `<svg class="w-4 h-4 text-zinc-950 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    ? `<svg class="w-4 h-4 text-[#081933] stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                        </svg>`
                     : ''
@@ -496,10 +482,10 @@
 
               <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
-                  <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                  <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
                     task.is_custom
-                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                      : 'bg-amber-500/10 text-amber-300/90 border border-amber-500/20'
+                      ? 'bg-[#d3a548]/25 text-[#f0ca75] border border-[#d3a548]/50'
+                      : 'bg-black/30 text-[#d3a548] border border-[#d3a548]/30'
                   }">
                     ${escapeHtml(task.category || 'Operativa')}
                     ${task.is_custom ? ' • Imprevisto' : ''}
@@ -508,13 +494,13 @@
                   <div class="flex items-center gap-1.5">
                     ${
                       completedTimeStr
-                        ? `<span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                        ? `<span class="text-[11px] text-[#10b981] font-bold flex items-center gap-1">
                              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                              </svg>
                              ${completedTimeStr}
                            </span>`
-                        : `<span class="text-[11px] text-zinc-500 font-mono">#${task.order_index <= 20 ? task.order_index : index + 1}</span>`
+                        : `<span class="text-[11px] text-white/50 font-mono">#${task.order_index <= 20 ? task.order_index : index + 1}</span>`
                     }
 
                     ${
@@ -524,7 +510,7 @@
                              data-action="delete-custom"
                              data-task-id="${task.id}"
                              title="Eliminar tarea personalizada"
-                             class="text-zinc-500 hover:text-red-400 p-1 rounded-lg transition"
+                             class="text-white/50 hover:text-[#ef4444] p-1 rounded-lg transition"
                            >
                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -538,8 +524,8 @@
                 <h3
                   data-action="toggle-complete"
                   data-task-id="${task.id}"
-                  class="text-base font-semibold leading-snug cursor-pointer select-none ${
-                    isCompleted ? 'line-through text-zinc-400' : 'text-zinc-100'
+                  class="item-name text-base font-bold leading-snug cursor-pointer select-none ${
+                    isCompleted ? 'line-through text-white/50' : 'text-white'
                   }"
                 >
                   ${escapeHtml(task.title)}
@@ -548,9 +534,9 @@
             </div>
 
             <!-- Fila Intermedia: Asignación de Responsable en Tiempo Real -->
-            <div class="mt-3.5 pt-3 border-t border-zinc-800/80 flex flex-wrap items-center gap-2">
+            <div class="mt-3.5 pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
               <div class="relative flex-1 min-w-[170px]">
-                <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-amber-400/80">
+                <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-[#d3a548]">
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                   </svg>
@@ -562,11 +548,9 @@
                   value="${escapeHtml(assignedTo)}"
                   placeholder="Sin responsable asignado..."
                   aria-label="Responsable de la tarea"
-                  class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-zinc-950/90 border ${
-                    assignedTo
-                      ? 'border-amber-500/40 text-amber-200 font-medium'
-                      : 'border-zinc-800 text-zinc-300'
-                  } focus:outline-none focus:border-amber-400 transition"
+                  class="lovo-input w-full pl-8 pr-3 py-1.5 text-xs ${
+                    assignedTo ? 'border-[#d3a548]/60 text-[#f0ca75] font-semibold' : ''
+                  }"
                 />
               </div>
 
@@ -575,10 +559,10 @@
                 type="button"
                 data-action="claim-task"
                 data-task-id="${task.id}"
-                class="px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1 ${
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
                   isAssignedToMe
-                    ? 'bg-amber-500/25 text-amber-300 border border-amber-400/50'
-                    : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700'
+                    ? 'bg-[#d3a548] text-[#081933] shadow'
+                    : 'bg-black/30 hover:bg-black/50 text-[#d3a548] border border-[#d3a548]/50'
                 }"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -592,10 +576,10 @@
                 type="button"
                 data-action="toggle-note"
                 data-task-id="${task.id}"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-medium border transition flex items-center gap-1 ${
+                class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 ${
                   task.notes && task.notes.trim()
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/35'
-                    : 'bg-zinc-900/70 text-zinc-400 border-zinc-800 hover:text-zinc-200'
+                    ? 'bg-[#d3a548]/20 text-[#d3a548] border-[#d3a548]/50'
+                    : 'bg-black/25 text-white/70 border-white/15 hover:text-white'
                 }"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -619,11 +603,7 @@
                     ? 'Escribe aquí el detalle obligatorio o incidencias de esta tarea...'
                     : 'Añadir nota o incidencia en tiempo real...'
                 }"
-                class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-950/90 border ${
-                  task.requires_note
-                    ? 'border-amber-500/35 focus:border-amber-400'
-                    : 'border-zinc-800 focus:border-amber-400'
-                } text-zinc-200 placeholder-zinc-500 focus:outline-none transition resize-none"
+                class="lovo-input w-full px-3 py-2 text-xs resize-none"
               >${escapeHtml(task.notes || '')}</textarea>
             </div>
           </article>
@@ -638,16 +618,10 @@
   function renderSupervisorDashboard() {
     if (state.user.role !== 'encargado') return;
 
-    // 1. Resumen de carga de trabajo por empleado
     const mapByEmployee = {};
-    let unassignedCount = 0;
-
     state.tasks.forEach((t) => {
       const person = (t.assigned_to || '').trim();
-      if (!person) {
-        unassignedCount++;
-        return;
-      }
+      if (!person) return;
       if (!mapByEmployee[person]) {
         mapByEmployee[person] = { total: 0, completed: 0 };
       }
@@ -659,19 +633,19 @@
     if (dom.teamBreakdownList) {
       if (entries.length === 0) {
         dom.teamBreakdownList.innerHTML = `
-          <p class="text-xs text-zinc-400 italic">Aún no hay empleados asignados a tareas en este turno.</p>
+          <p class="text-xs text-white/65 italic">Aún no hay empleados asignados a tareas en este turno.</p>
         `;
       } else {
         dom.teamBreakdownList.innerHTML = entries
           .map(([person, stats]) => {
             const allDone = stats.completed === stats.total;
             return `
-              <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-zinc-900/90 border border-zinc-800">
+              <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-black/30 border border-[#d3a548]/25">
                 <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full ${allDone ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
-                  <span class="text-xs font-semibold text-zinc-200">${escapeHtml(person)}</span>
+                  <span class="w-2 h-2 rounded-full ${allDone ? 'bg-[#10b981]' : 'bg-[#d3a548]'}"></span>
+                  <span class="text-xs font-bold text-white">${escapeHtml(person)}</span>
                 </div>
-                <span class="text-xs font-mono ${allDone ? 'text-emerald-400 font-bold' : 'text-amber-300'}">
+                <span class="text-xs font-mono ${allDone ? 'text-[#10b981] font-extrabold' : 'text-[#d3a548] font-bold'}">
                   ${stats.completed}/${stats.total} hechas
                 </span>
               </div>
@@ -681,25 +655,22 @@
       }
     }
 
-    // 2. Mostrar fecha/hora oficial de cierre
     if (dom.closingTimestampDisplay) {
       if (state.shiftState.closed_at) {
         const dt = new Date(state.shiftState.closed_at);
         dom.closingTimestampDisplay.textContent = formatDateTimeEs(dt);
-        dom.closingTimestampDisplay.className = 'text-xs font-mono text-emerald-400 font-semibold';
+        dom.closingTimestampDisplay.className = 'text-xs font-mono text-[#10b981] font-bold';
       } else {
         dom.closingTimestampDisplay.textContent =
           'Se registrará automáticamente al pulsar "Cerrar Turno y Enviar WhatsApp"';
-        dom.closingTimestampDisplay.className = 'text-xs text-amber-300/90 italic';
+        dom.closingTimestampDisplay.className = 'text-xs text-[#d3a548] italic';
       }
     }
 
-    // 3. Sincronizar campo de notas generales si no está enfocado
     if (dom.generalNotesInput && document.activeElement !== dom.generalNotesInput) {
       dom.generalNotesInput.value = state.shiftState.general_notes || '';
     }
 
-    // 4. Actualizar previsualización del reporte de WhatsApp
     if (dom.whatsappPreviewBox) {
       dom.whatsappPreviewBox.textContent = buildWhatsAppReportText(
         state.shiftState.closed_at ? new Date(state.shiftState.closed_at) : new Date()
@@ -719,9 +690,6 @@
     });
   }
 
-  /**
-   * Construye el mensaje estructurado y limpio para enviar al +34678146956
-   */
   function buildWhatsAppReportText(closingDate) {
     const dtStr = formatDateTimeEs(closingDate || new Date());
     const completed = state.tasks.filter((t) => t.is_completed).length;
@@ -756,7 +724,7 @@
     lines.push(`🗒️ *OBSERVACIONES DEL ENCARGADO (Cajas / Incidencias):*`);
     lines.push(generalNotes ? generalNotes : 'Sin incidencias adicionales registradas.');
     lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`🔒 *Cierre verificado en tiempo real — LoVo Cocktail Club*`);
+    lines.push(`🔒 *Cierre verificado en tiempo real — Coctelería LoVo*`);
 
     return lines.join('\n');
   }
@@ -780,7 +748,6 @@
   }
 
   function bindGlobalEvents() {
-    // 1. Selección de Rol en la pantalla de bienvenida
     dom.roleSelectButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const role = btn.getAttribute('data-select-role');
@@ -793,30 +760,27 @@
         dom.roleErrorMsg.classList.add('hidden');
         saveUserSession(name, role);
         enterMainApp();
-        showToast(`Bienvenido/a, ${name} (${role === 'encargado' ? 'Encargado' : 'Empleado'})`);
+        showToast(`¡CHEERS, ${name}! (${role === 'encargado' ? 'Encargado' : 'Empleado'})`);
       });
     });
 
-    // Cambiar de rol o usuario desde la cabecera
     if (dom.btnSwitchRole) {
       dom.btnSwitchRole.addEventListener('click', showRoleSelectionScreen);
     }
 
-    // 2. Filtros por Estado (Todas, Pendientes, Mis Tareas, Completadas)
     dom.filterStatusBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         state.filterStatus = btn.getAttribute('data-filter-status');
         dom.filterStatusBtns.forEach((b) => {
           const isSelected = b.getAttribute('data-filter-status') === state.filterStatus;
           b.className = isSelected
-            ? 'flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-amber-500 text-zinc-950 shadow transition'
-            : 'flex-1 py-2 px-3 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 transition';
+            ? 'flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-[#d3a548] text-[#081933] shadow transition'
+            : 'flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition';
         });
         renderTasksList();
       });
     });
 
-    // 3. Filtro por Categoría (Delegación)
     if (dom.categoryPillsContainer) {
       dom.categoryPillsContainer.addEventListener('click', (e) => {
         const pill = e.target.closest('[data-category-pill]');
@@ -827,7 +791,6 @@
       });
     }
 
-    // 4. Buscador en tiempo real
     if (dom.searchInput) {
       dom.searchInput.addEventListener('input', (e) => {
         state.searchQuery = e.target.value || '';
@@ -835,7 +798,6 @@
       });
     }
 
-    // 5. Delegación de eventos en la lista de tareas (Completar, Yo me encargo, Notas, Eliminar)
     if (dom.tasksContainer) {
       dom.tasksContainer.addEventListener('click', async (e) => {
         const actionEl = e.target.closest('[data-action]');
@@ -849,13 +811,11 @@
         if (action === 'toggle-complete') {
           const nextCompleted = !task.is_completed;
           const nowIso = nextCompleted ? new Date().toISOString() : null;
-          // Si no tenía responsable asignado, se asigna automáticamente al empleado que la marca
           const nextAssignee =
             nextCompleted && (!task.assigned_to || !task.assigned_to.trim())
               ? state.user.name
               : task.assigned_to;
 
-          // Actualización optimista inmediata
           task.is_completed = nextCompleted;
           task.completed_at = nowIso;
           task.assigned_to = nextAssignee;
@@ -909,7 +869,6 @@
         }
       });
 
-      // Edición en vivo de responsable y notas por tarea
       dom.tasksContainer.addEventListener('input', (e) => {
         const fieldEl = e.target.closest('[data-field]');
         if (!fieldEl) return;
@@ -926,7 +885,6 @@
       });
     }
 
-    // 6. Añadir tarea personalizada de madrugada
     if (dom.btnToggleAddTask && dom.addTaskDrawer) {
       dom.btnToggleAddTask.addEventListener('click', () => {
         dom.addTaskDrawer.classList.toggle('hidden');
@@ -969,7 +927,6 @@
       });
     }
 
-    // 7. Eventos del Panel de Encargado (Notas Generales, Registro Hora Cierre, WhatsApp, Reset)
     if (dom.generalNotesInput) {
       let shiftNotesTimer = null;
       dom.generalNotesInput.addEventListener('input', (e) => {
@@ -1020,7 +977,6 @@
         state.shiftState.is_closed = true;
         state.shiftState.general_notes = generalNotes;
 
-        // Registrar cierre y guardar histórico en Supabase
         try {
           await window.lovoRealtime.updateShiftState({
             closed_at: nowIso,
@@ -1074,12 +1030,11 @@
       });
     }
 
-    // 8. Modal de Código QR para los 15 empleados
     if (dom.btnOpenQrModal && dom.qrModal) {
       dom.btnOpenQrModal.addEventListener('click', () => {
         const currentUrl = window.location.origin;
         dom.qrUrlText.textContent = currentUrl;
-        dom.qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&color=09090B&bgcolor=FDE68A&data=${encodeURIComponent(
+        dom.qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&color=081933&bgcolor=F0CA75&data=${encodeURIComponent(
           currentUrl
         )}`;
         dom.qrModal.classList.remove('hidden');
@@ -1089,7 +1044,6 @@
       dom.btnCloseQrModal.addEventListener('click', () => dom.qrModal.classList.add('hidden'));
     }
 
-    // 9. Modal de Configuración de Supabase (por si se quiere conectar desde la UI)
     if (dom.btnOpenConfigModal && dom.configModal) {
       dom.btnOpenConfigModal.addEventListener('click', () => {
         dom.configSupabaseUrl.value = window.LoVoConfig.SUPABASE_URL || '';
@@ -1120,9 +1074,6 @@
     }
   }
 
-  // =========================================================================
-  // UTILIDADES
-  // =========================================================================
   function escapeHtml(str) {
     return String(str ?? '')
       .replace(/&/g, '&amp;')
@@ -1136,15 +1087,12 @@
     if (!dom.toastContainer) return;
     const toast = document.createElement('div');
     const isErr = type === 'error';
-    toast.className = `px-4 py-2.5 rounded-xl text-xs font-semibold shadow-lg backdrop-blur-md border transition-all duration-300 flex items-center gap-2 ${
+    toast.className = `px-4 py-2.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2 ${
       isErr
-        ? 'bg-red-950/90 text-red-200 border-red-500/40'
-        : 'bg-zinc-900/95 text-amber-300 border-amber-500/40'
+        ? 'bg-[#ef4444] text-white'
+        : 'bg-[#d3a548] text-[#081933] shadow-[#d3a548]/40'
     }`;
-    toast.innerHTML = `
-      <span class="w-2 h-2 rounded-full ${isErr ? 'bg-red-400' : 'bg-amber-400'}"></span>
-      <span>${escapeHtml(message)}</span>
-    `;
+    toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
     dom.toastContainer.appendChild(toast);
     setTimeout(() => {
       toast.style.opacity = '0';

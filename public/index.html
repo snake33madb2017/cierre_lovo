@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#09090b" />
+  <meta name="theme-color" content="#081933" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="LoVo Cierre" />
-  <meta name="description" content="Aplicación web interactiva en tiempo real para el cierre de turno nocturno de la coctelería LoVo." />
+  <meta name="description" content="Aplicación web interactiva en tiempo real para el cierre de turno nocturno de la Coctelería LoVo." />
 
-  <title>LoVo Cocktail Club — Cierre Nocturno en Tiempo Real</title>
+  <title>Cierre Coctelería LoVo — Tiempo Real</title>
 
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
-  <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+  <link rel="icon" type="image/png" href="/logo_lovo.png" />
+  <link rel="apple-touch-icon" href="/logo_lovo.png" />
 
-  <!-- Tipografías Nocturnas Elegantes -->
+  <!-- Tipografías Oficiales de Coctelería LoVo (Idénticas a Inventario LoVo) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,10 +26,17 @@
   <!-- Cliente Oficial de Supabase (Realtime + Postgres Changes + Presence) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Estilos Personalizados LoVo -->
+  <!-- Estilos Oficiales LoVo (Navy Blue #081933 + Gold #d3a548) -->
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
-<body class="antialiased selection:bg-amber-500 selection:text-zinc-950">
+<body class="antialiased selection:bg-[#d3a548] selection:text-[#081933]">
+
+  <!-- Luces Bokeh Animadas de Fondo (Idénticas a Inventario LoVo) -->
+  <div class="bokeh-container" id="bokeh-container">
+    <div class="bokeh b1"></div>
+    <div class="bokeh b2"></div>
+    <div class="bokeh b3"></div>
+  </div>
 
   <!-- Contenedor de Notificaciones Toast -->
   <div id="toast-container" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-80 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -37,73 +44,67 @@
   <!-- ========================================================================
        PANTALLA 1: BIENVENIDA Y SELECCIÓN DE ROL ([Empleado] vs [Encargado])
        ======================================================================== -->
-  <main id="role-screen" class="min-h-dvh flex flex-col justify-center items-center px-4 py-10">
-    <div class="w-full max-w-md lovo-glass-gold rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-      <!-- Decoración luminosa sutil -->
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+  <main id="role-screen" class="min-h-dvh flex flex-col justify-center items-center px-4 py-10 relative z-10">
+    <div class="glass-login-container">
+      <!-- Logo Oficial de Coctelería LoVo -->
+      <img
+        src="/logo_lovo.png"
+        alt="Logo Coctelería LoVo"
+        style="width: 120px; display: block; margin: 0 auto 14px auto;"
+      />
 
-      <!-- Cabecera de Marca LoVo -->
-      <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-950 border border-amber-500/40 shadow-lg shadow-amber-500/10 mb-3">
-          <img src="/icons/icon-192.svg" alt="LoVo Logo" class="w-12 h-12" />
-        </div>
-        <p class="text-[11px] uppercase tracking-[0.28em] text-amber-400/90 font-semibold">Cocktail Club • Turno Nocturno</p>
-        <h1 class="font-serif-lovo text-3xl sm:text-4xl font-bold text-zinc-100 mt-1">
-          Cierre <span class="text-amber-400">LoVo</span>
-        </h1>
-        <p class="text-xs text-zinc-400 mt-1.5">
-          Sincronización en tiempo real para todo el equipo (QR Multi-usuario)
-        </p>
+      <h1
+        style="font-family: 'Playfair Display', serif; color: var(--primary-color); font-size: 1.55rem; font-weight: 700; margin-bottom: 6px;"
+      >
+        Cierre Coctelería LoVo
+      </h1>
+      <p class="font-baskervville italic text-xs text-white/70 mb-6">
+        Checklist interactivo en tiempo real • Turno Nocturno
+      </p>
+
+      <!-- Paso 1: Nombre o ID con Floating Label (Estilo Inventario LoVo) -->
+      <div class="input-group">
+        <input
+          id="user-name-input"
+          type="text"
+          required
+          placeholder=" "
+          autocomplete="name"
+        />
+        <label for="user-name-input">Tu Nombre o ID (Ej: Carlos, Barra 1)</label>
       </div>
 
-      <!-- Paso 1: Identificación del miembro del equipo -->
-      <div class="mb-5">
-        <label for="user-name-input" class="block text-xs font-semibold uppercase tracking-wider text-amber-300/90 mb-2">
-          1. Tu Nombre o ID de Empleado
-        </label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-amber-400">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-          </span>
-          <input
-            id="user-name-input"
-            type="text"
-            autocomplete="name"
-            placeholder="Ej: Carlos, Lucía (Barra 2), ID #08..."
-            class="w-full pl-10 pr-4 py-3 rounded-2xl bg-zinc-950/90 border border-amber-500/35 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 transition"
-          />
-        </div>
-        <p id="role-error-msg" class="hidden text-xs text-red-400 mt-1.5 font-medium">
-          ⚠️ Por favor, escribe tu nombre o ID antes de elegir tu rol para que tus compañeros vean quién realiza cada tarea.
-        </p>
-      </div>
+      <p id="role-error-msg" class="hidden text-xs text-[#ef4444] -mt-3 mb-4 font-semibold text-left">
+        ⚠️ Escribe tu nombre o ID antes de elegir tu rol.
+      </p>
 
       <!-- Paso 2: Selección de Rol -->
-      <div class="space-y-3">
-        <p class="block text-xs font-semibold uppercase tracking-wider text-amber-300/90 mb-2">
-          2. Selecciona tu Rol de Acceso esta noche
+      <div class="text-left space-y-3 mt-2">
+        <p
+          style="font-family: 'Playfair Display', serif; color: var(--primary-color); font-size: 0.9rem; font-weight: 700;"
+          class="text-center mb-2"
+        >
+          Selecciona tu Rol de Acceso
         </p>
 
         <!-- Botón Rol Empleado -->
         <button
           type="button"
           data-select-role="empleado"
-          class="w-full text-left p-4 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800/90 border border-zinc-700/80 hover:border-amber-500/50 transition group flex items-start gap-3.5"
+          class="w-full text-left p-3.5 rounded-xl bg-black/25 hover:bg-black/40 border border-[#d3a548]/35 hover:border-[#d3a548] transition group flex items-center gap-3.5"
         >
-          <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition">
+          <div class="w-11 h-11 rounded-xl bg-[#d3a548]/15 border border-[#d3a548]/40 flex items-center justify-center text-[#d3a548] shrink-0 group-hover:scale-105 transition">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
             </svg>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <span class="text-base font-bold text-zinc-100 group-hover:text-amber-300 transition">Empleado</span>
-              <span class="text-xs text-amber-400 font-semibold">Entrar →</span>
+              <span class="text-sm font-bold text-white group-hover:text-[#d3a548] transition">EMPLEADO</span>
+              <span class="text-xs text-[#d3a548] font-bold">Entrar →</span>
             </div>
-            <p class="text-xs text-zinc-400 mt-0.5 leading-relaxed">
-              Reclama tu responsabilidad en las tareas, márcalas en tiempo real y añade tareas imprevistas de madrugada.
+            <p class="text-[11px] text-white/65 mt-0.5 leading-snug">
+              Marcar tareas, reclamar responsabilidad y añadir imprevistos.
             </p>
           </div>
         </button>
@@ -112,59 +113,69 @@
         <button
           type="button"
           data-select-role="encargado"
-          class="w-full text-left p-4 rounded-2xl bg-gradient-to-br from-amber-500/15 via-zinc-900/95 to-zinc-950 hover:from-amber-500/25 border border-amber-500/45 hover:border-amber-400 transition group flex items-start gap-3.5"
+          class="submit-btn w-full text-left p-3.5 rounded-xl flex items-center gap-3.5"
         >
-          <div class="w-11 h-11 rounded-xl bg-amber-500 text-zinc-950 flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 group-hover:scale-105 transition">
+          <div class="w-11 h-11 rounded-xl bg-[#081933] text-[#d3a548] flex items-center justify-center shrink-0 shadow">
             <svg class="w-6 h-6 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <span class="text-base font-bold text-amber-300">Encargado / Verificador</span>
-              <span class="text-xs text-amber-400 font-semibold">Supervisar →</span>
+              <span class="text-sm font-extrabold text-[#081933]">ENCARGADO / VERIFICADOR</span>
+              <span class="text-xs font-extrabold text-[#081933]">Supervisar →</span>
             </div>
-            <p class="text-xs text-zinc-300/90 mt-0.5 leading-relaxed">
-              Vista global de supervisión, control de responsables, notas de cierre y envío oficial del reporte a WhatsApp.
+            <p class="text-[11px] text-[#081933]/85 font-medium mt-0.5 leading-snug">
+              Supervisión global, control de cierre y envío oficial a WhatsApp.
             </p>
           </div>
         </button>
       </div>
+    </div>
+
+    <div class="mt-6 text-center text-white/40 text-xs font-sans">
+      Desarrollado por @MDev - Marco Daza 2026
     </div>
   </main>
 
   <!-- ========================================================================
        PANTALLA 2: APLICACIÓN INTERACTIVA EN TIEMPO REAL
        ======================================================================== -->
-  <div id="app-screen" class="hidden min-h-dvh pb-24">
+  <div id="app-screen" class="hidden min-h-dvh pb-24 relative z-10">
 
-    <!-- Cabecera Superior Pegajosa (Sticky Mobile Header) -->
-    <header class="sticky top-0 z-30 backdrop-blur-xl bg-zinc-950/85 border-b border-amber-500/20">
-      <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <img src="/icons/icon-192.svg" alt="LoVo" class="w-9 h-9 rounded-xl border border-amber-500/40 shrink-0" />
+    <!-- Cabecera Superior Pegajosa (Estilo Oficial Inventario LoVo) -->
+    <header class="sticky top-0 z-30 lovo-header-sticky">
+      <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <img
+            src="/logo_lovo.png"
+            alt="Logo LoVo"
+            class="h-11 w-auto object-contain shrink-0 drop-shadow"
+          />
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <h2 class="font-serif-lovo text-lg font-bold text-zinc-100 leading-none">LoVo Cierre</h2>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="font-serif-lovo text-lg sm:text-xl font-extrabold text-[#d3a548] leading-none">
+                Cierre LoVo
+              </h2>
               <span id="header-user-role-badge">Empleado</span>
             </div>
-            <div class="flex items-center gap-1.5 mt-1 text-xs text-zinc-400 truncate">
-              <span>👤 <strong id="header-user-name" class="text-zinc-200"></strong></span>
+            <div class="flex items-center gap-1.5 mt-1 text-xs text-white/70 truncate">
+              <span>👤 <strong id="header-user-name" class="text-white"></strong></span>
               <span>•</span>
-              <button id="btn-switch-role" type="button" class="text-amber-400 hover:underline font-medium">
-                Cambiar rol/nombre
+              <button id="btn-switch-role" type="button" class="text-[#d3a548] hover:underline font-semibold">
+                Cambiar rol
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Botones de Acción Rápida (QR para los 15 empleados + Config DB) -->
+        <!-- Botones de Acción Rápida (QR Equipo + Config DB) -->
         <div class="flex items-center gap-1.5 shrink-0">
           <button
             id="btn-open-qr-modal"
             type="button"
-            title="Mostrar Código QR para el equipo"
-            class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-amber-500/30 transition flex items-center gap-1.5 text-xs font-semibold"
+            title="Mostrar Código QR para los 15 empleados"
+            class="px-2.5 py-2 rounded-xl bg-black/30 hover:bg-black/45 text-[#d3a548] border border-[#d3a548]/40 transition flex items-center gap-1.5 text-xs font-bold"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
@@ -176,7 +187,7 @@
             id="btn-open-config-modal"
             type="button"
             title="Configuración de conexión Supabase"
-            class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-amber-300 border border-zinc-800 transition"
+            class="p-2 rounded-xl bg-black/30 hover:bg-black/45 text-white/70 hover:text-[#d3a548] border border-[#d3a548]/25 transition"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -187,21 +198,21 @@
       </div>
     </header>
 
-    <div class="max-w-3xl mx-auto px-4 pt-4 space-y-4">
+    <div class="max-w-2xl mx-auto px-4 pt-4 space-y-4">
 
       <!-- Barra de Estado Realtime y Empleados Conectados -->
       <section class="lovo-glass rounded-2xl p-3.5">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <div id="connection-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+          <div id="connection-badge" class="status-indicator">
             <span class="w-2 h-2 rounded-full bg-current live-dot"></span>
             <span id="connection-text">Conectando...</span>
           </div>
 
-          <div class="inline-flex items-center gap-1.5 text-xs text-zinc-400">
-            <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="inline-flex items-center gap-1.5 text-xs text-white/80">
+            <svg class="w-4 h-4 text-[#d3a548]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <span id="online-count-badge" class="font-semibold text-zinc-200">1 en línea</span>
+            <span id="online-count-badge" class="font-bold text-[#d3a548]">1 en línea</span>
           </div>
         </div>
 
@@ -213,33 +224,33 @@
       <section class="lovo-glass-gold rounded-2xl p-4">
         <div class="flex items-baseline justify-between mb-2">
           <div>
-            <p class="text-[11px] uppercase tracking-wider text-amber-300/90 font-semibold">Progreso del Cierre Nocturno</p>
-            <p id="progress-text" class="text-sm text-zinc-300 font-medium mt-0.5">0 de 20 tareas completadas</p>
+            <p class="font-serif-lovo text-sm font-bold text-[#d3a548]">Progreso del Cierre Nocturno</p>
+            <p id="progress-text" class="text-xs text-white/80 font-medium mt-0.5">0 de 20 tareas completadas</p>
           </div>
-          <span id="progress-percent" class="font-serif-lovo text-3xl font-bold text-amber-400">0%</span>
+          <span id="progress-percent" class="font-serif-lovo text-3xl font-extrabold text-[#d3a548]">0%</span>
         </div>
 
-        <div class="w-full h-3 rounded-full bg-zinc-950/90 border border-zinc-800 overflow-hidden p-0.5">
+        <div class="w-full h-3 rounded-full bg-black/40 border border-[#d3a548]/30 overflow-hidden p-0.5">
           <div
             id="progress-bar-fill"
-            class="h-full rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 transition-all duration-500"
+            class="h-full rounded-full bg-gradient-to-r from-[#d3a548] via-[#f0ca75] to-[#10b981] transition-all duration-500"
             style="width: 0%"
           ></div>
         </div>
 
         <!-- Mini contadores -->
-        <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-amber-500/20 text-center">
-          <div class="bg-zinc-950/60 rounded-xl py-2 px-1 border border-zinc-800/80">
-            <span id="stat-completed" class="block text-base font-bold text-emerald-400">0</span>
-            <span class="text-[11px] text-zinc-400">Completadas</span>
+        <div class="grid grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-[#d3a548]/20 text-center">
+          <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
+            <span id="stat-completed" class="block text-base font-extrabold text-[#10b981]">0</span>
+            <span class="text-[11px] text-white/65">Completadas</span>
           </div>
-          <div class="bg-zinc-950/60 rounded-xl py-2 px-1 border border-zinc-800/80">
-            <span id="stat-pending" class="block text-base font-bold text-amber-300">20</span>
-            <span class="text-[11px] text-zinc-400">Pendientes</span>
+          <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
+            <span id="stat-pending" class="block text-base font-extrabold text-[#d3a548]">20</span>
+            <span class="text-[11px] text-white/65">Pendientes</span>
           </div>
-          <div class="bg-zinc-950/60 rounded-xl py-2 px-1 border border-zinc-800/80">
-            <span id="stat-unassigned" class="block text-base font-bold text-zinc-200">20</span>
-            <span class="text-[11px] text-zinc-400">Sin asignar</span>
+          <div class="bg-black/25 rounded-xl py-2 px-1 border border-white/10">
+            <span id="stat-unassigned" class="block text-base font-extrabold text-white">20</span>
+            <span class="text-[11px] text-white/65">Sin asignar</span>
           </div>
         </div>
       </section>
@@ -247,17 +258,17 @@
       <!-- Barra de Filtros, Categorías y Añadir Tarea Imprevista -->
       <section class="space-y-3">
         <!-- Pestañas de Estado -->
-        <div class="lovo-glass p-1 rounded-2xl flex items-center gap-1">
-          <button type="button" data-filter-status="all" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-amber-500 text-zinc-950 shadow transition">
+        <div class="lovo-glass p-1 rounded-xl flex items-center gap-1">
+          <button type="button" data-filter-status="all" class="flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-[#d3a548] text-[#081933] shadow transition">
             Todas
           </button>
-          <button type="button" data-filter-status="pending" class="flex-1 py-2 px-3 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 transition">
+          <button type="button" data-filter-status="pending" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition">
             Pendientes
           </button>
-          <button type="button" data-filter-status="mine" class="flex-1 py-2 px-3 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 transition">
+          <button type="button" data-filter-status="mine" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition">
             Mis Tareas
           </button>
-          <button type="button" data-filter-status="completed" class="flex-1 py-2 px-3 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 transition">
+          <button type="button" data-filter-status="completed" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-white/70 hover:text-white transition">
             Hechas
           </button>
         </div>
@@ -265,7 +276,7 @@
         <!-- Buscador + Botón Añadir Tarea Imprevista de Madrugada -->
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-500">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-[#d3a548]">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
@@ -273,15 +284,15 @@
             <input
               id="task-search-input"
               type="search"
-              placeholder="Buscar tarea, empleado o nota..."
-              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500/60"
+              placeholder="Buscar tarea, responsable o nota..."
+              class="lovo-input w-full pl-9 pr-3 py-2.5 text-xs"
             />
           </div>
 
           <button
             id="btn-toggle-add-task"
             type="button"
-            class="btn-gold px-3.5 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shrink-0"
+            class="btn-gold px-3.5 py-2.5 text-xs flex items-center gap-1.5 shrink-0"
           >
             <svg class="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -292,7 +303,7 @@
 
         <!-- Cajón Desplegable para Añadir Tarea Personalizada de Última Hora -->
         <div id="add-task-drawer" class="hidden lovo-glass-gold rounded-2xl p-4">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2.5">
+          <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5">
             ➕ Añadir Tarea Imprevista de Madrugada
           </h3>
           <form id="custom-task-form" class="space-y-2.5">
@@ -302,13 +313,13 @@
                 type="text"
                 required
                 placeholder="Descripción de la tarea imprevista (ej. Limpiar derrame almacén)"
-                class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+                class="lovo-input w-full px-3 py-2 text-xs"
               />
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <select
                 id="custom-task-category"
-                class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 focus:outline-none focus:border-amber-400"
+                class="lovo-input font-baskervville w-full px-3 py-2 text-xs bg-[#081933]"
               >
                 <option value="Imprevistos Madrugada">Área: Imprevistos Madrugada</option>
                 <option value="Barra y Stock">Área: Barra y Stock</option>
@@ -321,7 +332,7 @@
                 id="custom-task-assignee"
                 type="text"
                 placeholder="Responsable asignado..."
-                class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+                class="lovo-input w-full px-3 py-2 text-xs"
               />
             </div>
             <div>
@@ -329,13 +340,13 @@
                 id="custom-task-notes"
                 type="text"
                 placeholder="Nota adicional o incidencia (opcional)..."
-                class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+                class="lovo-input w-full px-3 py-2 text-xs"
               />
             </div>
             <div class="flex justify-end gap-2 pt-1">
               <button
                 type="submit"
-                class="btn-gold px-4 py-2 rounded-xl text-xs font-bold"
+                class="btn-gold px-4 py-2 text-xs font-bold"
               >
                 Guardar y Sincronizar con el Equipo
               </button>
@@ -343,8 +354,8 @@
           </form>
         </div>
 
-        <!-- Píldoras de Categorías -->
-        <div id="category-pills" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+        <!-- Píldoras de Categorías (Estilo Inventario LoVo) -->
+        <div id="category-pills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
       </section>
 
       <!-- ====================================================================
@@ -359,15 +370,16 @@
            ==================================================================== -->
       <section id="supervisor-section" class="hidden pt-4 space-y-4">
         <div class="lovo-glass-gold rounded-3xl p-5 sm:p-6 space-y-5">
-          <div class="flex items-start justify-between gap-3 border-b border-amber-500/25 pb-4">
+          <div class="flex items-center gap-3 border-b border-[#d3a548]/30 pb-4">
+            <img src="/logo_lovo.png" alt="LoVo" class="w-12 h-12 object-contain shrink-0" />
             <div>
-              <span class="inline-block text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500 text-zinc-950 mb-1.5">
+              <span class="inline-block text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#d3a548] text-[#081933] mb-1">
                 Panel Exclusivo Encargado
               </span>
-              <h2 class="font-serif-lovo text-2xl font-bold text-zinc-100">
+              <h2 class="font-serif-lovo text-xl sm:text-2xl font-bold text-[#d3a548]">
                 Supervisión Global y Cierre Oficial
               </h2>
-              <p class="text-xs text-zinc-400 mt-0.5">
+              <p class="text-xs text-white/70 mt-0.5">
                 Verifica los responsables, añade observaciones de cierre y envía el parte oficial por WhatsApp.
               </p>
             </div>
@@ -375,26 +387,26 @@
 
           <!-- 1. Supervisión de Responsables del Equipo -->
           <div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2.5">
+            <h3 class="font-serif-lovo text-sm font-bold text-[#d3a548] mb-2.5">
               👥 Rendimiento y Tareas por Responsable
             </h3>
             <div id="team-breakdown-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
 
           <!-- 2. Registro de Fecha y Hora Exacta del Cierre -->
-          <div class="p-3.5 rounded-2xl bg-zinc-950/85 border border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="p-3.5 rounded-2xl bg-black/30 border border-[#d3a548]/30 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-white/75">
                 🕒 Registro Oficial de Fecha y Hora de Cierre
               </p>
-              <p id="closing-timestamp-display" class="text-xs text-amber-300/90 italic mt-0.5">
+              <p id="closing-timestamp-display" class="text-xs text-[#d3a548] italic mt-0.5">
                 Pendiente de sellar hora de cierre...
               </p>
             </div>
             <button
               id="btn-register-close-time"
               type="button"
-              class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-amber-500/35 transition"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-black/40 hover:bg-black/60 text-[#d3a548] border border-[#d3a548] transition"
             >
               Sellar Hora Ahora
             </button>
@@ -403,36 +415,36 @@
           <!-- 3. Comentarios Adicionales del Encargado -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <label for="general-notes-input" class="text-xs font-bold uppercase tracking-wider text-amber-300">
+              <label for="general-notes-input" class="font-serif-lovo text-sm font-bold text-[#d3a548]">
                 🗒️ Comentarios del Encargado (Cajas de cerveza, stock, incidencias)
               </label>
-              <span id="notes-sync-indicator" class="text-[11px] text-zinc-500">Sincronizado</span>
+              <span id="notes-sync-indicator" class="text-[11px] text-white/55">Sincronizado</span>
             </div>
             <textarea
               id="general-notes-input"
               rows="3"
               placeholder="Ej: Se dejan 14 cajas de cerveza en cámara, 1 datáfono con batería baja, caja cuadrada sin descuadres..."
-              class="w-full px-3.5 py-2.5 rounded-2xl bg-zinc-950/90 border border-amber-500/35 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400 transition"
+              class="lovo-input w-full px-3.5 py-2.5 text-xs"
             ></textarea>
           </div>
 
           <!-- 4. Previsualización del Mensaje de WhatsApp -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">
+              <span class="font-serif-lovo text-sm font-bold text-[#d3a548]">
                 📲 Vista Previa del Reporte Oficial (+34 678 14 69 56)
               </span>
               <button
                 id="btn-copy-report"
                 type="button"
-                class="text-xs text-amber-400 hover:underline font-medium"
+                class="text-xs text-[#d3a548] hover:underline font-semibold"
               >
                 Copiar texto
               </button>
             </div>
             <pre
               id="whatsapp-preview-box"
-              class="p-3.5 rounded-2xl bg-zinc-950/95 border border-zinc-800 text-[11px] text-zinc-300 font-mono whitespace-pre-wrap max-h-60 overflow-y-auto leading-relaxed"
+              class="p-3.5 rounded-2xl bg-black/40 border border-[#d3a548]/25 text-[11px] text-white/90 font-mono whitespace-pre-wrap max-h-60 overflow-y-auto leading-relaxed"
             ></pre>
           </div>
 
@@ -441,7 +453,7 @@
             <button
               id="btn-send-whatsapp"
               type="button"
-              class="w-full py-3.5 px-5 rounded-2xl font-bold text-sm bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-500 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-105 active:scale-[0.99] transition flex items-center justify-center gap-2.5"
+              class="submit-btn w-full py-3.5 px-5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2.5"
             >
               <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.125.556 4.119 1.529 5.847l-1.529 5.581 5.716-1.5c1.678.912 3.599 1.434 5.647 1.434 6.627 0 12-5.373 12-12s-5.373-12-12-12z"/>
@@ -453,7 +465,7 @@
               <button
                 id="btn-reset-shift"
                 type="button"
-                class="text-xs text-zinc-400 hover:text-red-400 transition flex items-center gap-1"
+                class="text-xs text-[#ef4444] border border-[#ef4444]/60 hover:bg-[#ef4444]/15 px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1"
               >
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -465,6 +477,9 @@
         </div>
       </section>
 
+      <footer class="pt-6 pb-4 text-center text-white/40 text-xs">
+        Coctelería LoVo • Desarrollado por @MDev - Marco Daza 2026
+      </footer>
     </div>
   </div>
 
@@ -476,19 +491,20 @@
       <button
         id="btn-close-qr-modal"
         type="button"
-        class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 p-1"
+        class="absolute top-4 right-4 text-white/60 hover:text-white p-1"
       >
         ✕
       </button>
-      <p class="text-[11px] uppercase tracking-widest text-amber-400 font-bold">Acceso Rápido Multi-Usuario</p>
-      <h3 class="font-serif-lovo text-2xl font-bold text-zinc-100 mt-1">Código QR Equipo LoVo</h3>
-      <p class="text-xs text-zinc-400 mt-1 mb-4">
+      <img src="/logo_lovo.png" alt="Logo LoVo" class="w-16 h-16 mx-auto mb-2 object-contain" />
+      <p class="text-[11px] uppercase tracking-widest text-[#d3a548] font-bold">Acceso Rápido Multi-Usuario</p>
+      <h3 class="font-serif-lovo text-2xl font-bold text-white mt-1">Código QR Equipo LoVo</h3>
+      <p class="text-xs text-white/70 mt-1 mb-4">
         Los 15 empleados pueden escanear este QR con su cámara para unirse al cierre en tiempo real.
       </p>
-      <div class="inline-block p-3 rounded-2xl bg-amber-200 shadow-xl mx-auto">
+      <div class="inline-block p-3 rounded-2xl bg-[#f0ca75] shadow-xl mx-auto">
         <img id="qr-code-img" src="" alt="Código QR LoVo" class="w-56 h-56 rounded-lg" />
       </div>
-      <p id="qr-url-text" class="mt-3 text-xs font-mono text-amber-300 break-all"></p>
+      <p id="qr-url-text" class="mt-3 text-xs font-mono text-[#d3a548] break-all"></p>
     </div>
   </div>
 
@@ -500,38 +516,38 @@
       <button
         id="btn-close-config-modal"
         type="button"
-        class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 p-1"
+        class="absolute top-4 right-4 text-white/60 hover:text-white p-1"
       >
         ✕
       </button>
-      <p class="text-[11px] uppercase tracking-widest text-amber-400 font-bold">Conexión Base de Datos</p>
-      <h3 class="font-serif-lovo text-xl font-bold text-zinc-100 mt-1">Parámetros de Supabase</h3>
-      <p class="text-xs text-zinc-400 mt-1 mb-4">
-        En Render se cargan automáticamente desde las variables de entorno <code class="text-amber-300">SUPABASE_URL</code> y <code class="text-amber-300">SUPABASE_ANON_KEY</code>. También puedes definirlas aquí para pruebas directas:
+      <p class="text-[11px] uppercase tracking-widest text-[#d3a548] font-bold">Conexión Base de Datos</p>
+      <h3 class="font-serif-lovo text-xl font-bold text-white mt-1">Parámetros de Supabase</h3>
+      <p class="text-xs text-white/70 mt-1 mb-4">
+        En Render se cargan automáticamente desde las variables de entorno <code class="text-[#d3a548]">SUPABASE_URL</code> y <code class="text-[#d3a548]">SUPABASE_ANON_KEY</code>. También puedes definirlas aquí:
       </p>
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1">SUPABASE_URL</label>
+          <label class="block text-xs font-semibold text-white/80 mb-1">SUPABASE_URL</label>
           <input
             id="config-supabase-url"
             type="url"
             placeholder="https://xyzcompany.supabase.co"
-            class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 focus:outline-none focus:border-amber-400"
+            class="lovo-input w-full px-3 py-2 text-xs"
           />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1">SUPABASE_ANON_KEY</label>
+          <label class="block text-xs font-semibold text-white/80 mb-1">SUPABASE_ANON_KEY</label>
           <input
             id="config-supabase-key"
             type="password"
             placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-            class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 focus:outline-none focus:border-amber-400"
+            class="lovo-input w-full px-3 py-2 text-xs"
           />
         </div>
         <button
           id="btn-save-config"
           type="button"
-          class="w-full btn-gold py-2.5 rounded-xl text-xs font-bold mt-2"
+          class="w-full btn-gold py-2.5 text-xs font-bold mt-2"
         >
           Guardar y Reconectar Realtime
         </button>
